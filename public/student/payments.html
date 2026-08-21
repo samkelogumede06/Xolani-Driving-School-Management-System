@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Payments — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">🎓 Student Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Main</div>
+    <a href="/student/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-home"></i></span> Dashboard</a>
+    <a href="/student/lessons.html" class="nav-item"><span class="ni"><i class="fas fa-car"></i></span> My Lessons</a>
+    <a href="/student/book-lesson.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-plus"></i></span> Book Lesson</a>
+    <a href="/student/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Attendance</a>
+    <a href="/student/progress.html" class="nav-item"><span class="ni"><i class="fas fa-chart-line"></i></span> My Progress</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/student/payments.html" class="nav-item active"><span class="ni"><i class="fas fa-credit-card"></i></span> Payments</a>
+    <a href="/student/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications <span class="nav-badge notif-badge" style="display:none">0</span></a>
+    <a href="/student/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> My Profile</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">ST</div><div><div class="sb-name" id="sb-name">Student</div><div class="sb-role">Student</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Payment History</div><div class="pg-sub">View all your payment transactions</div></div></div>
+    <div class="topbar-right"><a href="/student/notifications.html" class="tb-action"><i class="fas fa-bell"></i><span class="notif-dot notif-badge" style="display:none">0</span></a><div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">ST</div><span class="tb-name" id="tb-name">Student</span><div class="dropdown-menu" id="user-dd"><a href="/student/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div></div>
+  </header>
+  <div class="page-content">
+    <!-- BALANCE CARD -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:22px">
+      <div style="background:linear-gradient(135deg,var(--success),#15803d);border-radius:var(--r-lg);padding:22px;color:#fff">
+        <div style="font-size:.72rem;opacity:.7;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Total Paid</div>
+        <div style="font-family:var(--ff-head);font-size:2rem;font-weight:800" id="total-paid">R—</div>
+        <div style="font-size:.8rem;opacity:.65;margin-top:4px">All time</div>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--danger),#b91c1c);border-radius:var(--r-lg);padding:22px;color:#fff">
+        <div style="font-size:.72rem;opacity:.7;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Balance Due</div>
+        <div style="font-family:var(--ff-head);font-size:2rem;font-weight:800" id="balance-due">R—</div>
+        <div style="font-size:.8rem;opacity:.65;margin-top:4px">Outstanding</div>
+      </div>
+      <div style="background:var(--white);border-radius:var(--r-lg);padding:22px;border:1px solid var(--gray-100);box-shadow:var(--sh)">
+        <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Package</div>
+        <div style="font-family:var(--ff-head);font-size:1.1rem;font-weight:700;color:var(--primary)" id="pkg-name">—</div>
+        <div style="font-size:.8rem;color:var(--gray-400);margin-top:4px" id="pkg-status">—</div>
+      </div>
+    </div>
+
+    <!-- PAYMENT METHODS INFO -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-title">💳 How to Make Payments</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+          <div style="background:var(--gray-50);border-radius:var(--r-sm);padding:16px;border:1px solid var(--gray-100)">
+            <div style="font-weight:700;color:var(--primary);margin-bottom:6px">🏦 EFT / Bank Transfer</div>
+            <div style="font-size:.8rem;color:var(--gray-500)">First National Bank<br>Account: <strong>62012345678</strong><br>Branch: <strong>255655</strong><br>Ref: Your ID number</div>
+          </div>
+          <div style="background:var(--gray-50);border-radius:var(--r-sm);padding:16px;border:1px solid var(--gray-100)">
+            <div style="font-weight:700;color:var(--primary);margin-bottom:6px">💵 Cash</div>
+            <div style="font-size:.8rem;color:var(--gray-500)">Pay in person at either branch. Cash payments recorded immediately by admin staff.</div>
+          </div>
+          <div style="background:var(--gray-50);border-radius:var(--r-sm);padding:16px;border:1px solid var(--gray-100)">
+            <div style="font-weight:700;color:var(--primary);margin-bottom:6px">💳 Card</div>
+            <div style="font-size:.8rem;color:var(--gray-500)">Card machine available at both branches. Visa and Mastercard accepted.</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:rgba(245,166,35,.08);border-radius:var(--r-sm);border-left:3px solid var(--accent);font-size:.82rem;color:var(--gray-600)">
+          <strong>📞 Payment queries:</strong> Call +27 79 592 5530 (Umlazi V) or +27 73 333 3770 (Umlazi W). Always quote your ID number as reference.
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT HISTORY TABLE -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-receipt" style="color:var(--accent)"></i> Transaction History</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Description</th><th>Reference</th><th>Method</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="payments-tbody"><tr><td colspan="6" style="text-align:center;padding:28px"><span class="spinner spinner-dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+async function loadPayments() {
+  try {
+    const data = await api('/api/student/payments');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; const init = u.firstName[0]+u.lastName[0];
+    ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+    ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    document.getElementById('total-paid').textContent = 'R' + parseFloat(data.totalPaid||0).toFixed(2);
+    document.getElementById('balance-due').textContent = 'R' + parseFloat(data.balanceDue||0).toFixed(2);
+    document.getElementById('pkg-name').textContent = data.packageName || 'No Package';
+    document.getElementById('pkg-status').textContent = data.enrollmentStatus || '—';
+    const tbody = document.getElementById('payments-tbody');
+    if (data.payments?.length) {
+      tbody.innerHTML = data.payments.map(p => `
+        <tr>
+          <td style="font-weight:600">${fmtDate(p.payment_date)}</td>
+          <td>${p.description || 'Lesson Payment'}</td>
+          <td style="font-size:.78rem;color:var(--gray-400)">${p.reference_number || '—'}</td>
+          <td><span class="badge badge-gray">${p.payment_method||'—'}</span></td>
+          <td style="font-weight:700;color:var(--success)">R${parseFloat(p.amount).toFixed(2)}</td>
+          <td><span class="badge badge-${p.status==='completed'?'success':p.status==='pending'?'warning':'danger'}">${p.status}</span></td>
+        </tr>`).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><div class="empty-state-icon">💳</div><div class="empty-state-title">No payment records</div><div class="empty-state-desc">Your payments will appear here once processed by admin.</div></td></tr>';
+    }
+  } catch(err) { console.error(err); }
+}
+loadPayments();
+</script>
+</body>
+</html>

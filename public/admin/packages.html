@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Packages — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div><a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item active"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+    <div><div class="pg-title">Packages & Pricing</div><div class="pg-sub">Manage lesson packages and pricing</div></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" data-open="pkg-modal"><i class="fas fa-plus"></i> New Package</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span>
+        <div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-box" style="color:var(--info)"></i></div><div><div class="stat-val" id="p-total">—</div><div class="stat-lbl">Total Packages</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-check" style="color:var(--success)"></i></div><div><div class="stat-val" id="p-active">—</div><div class="stat-lbl">Active</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-tag" style="color:var(--accent)"></i></div><div><div class="stat-val" id="p-min">—</div><div class="stat-lbl">Min Price</div></div></div>
+      <div class="stat-card"><div class="stat-ico purple"><i class="fas fa-crown" style="color:#9333ea"></i></div><div><div class="stat-val" id="p-max">—</div><div class="stat-lbl">Max Price</div></div></div>
+    </div>
+
+    <!-- PACKAGE CARDS -->
+    <div id="packages-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px">
+      <div style="text-align:center;padding:48px;color:var(--gray-400);grid-column:1/-1"><span class="spinner spinner-dark"></span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADD/EDIT PACKAGE MODAL -->
+<div class="modal-overlay" id="pkg-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="pkg-modal-title">📦 New Package</div><button class="modal-close" data-close="pkg-modal">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="pkg-edit-id">
+      <form id="pkg-form">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Package Name <span class="req">*</span></label><input type="text" name="name" class="form-control" required placeholder="e.g. Standard Pack"></div>
+          <div class="form-group"><label class="form-label">Price (R) <span class="req">*</span></label><input type="number" name="price" class="form-control" required min="0" step="0.01" placeholder="2800.00"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2" placeholder="Brief description of the package…"></textarea></div>
+        <div class="form-row-3">
+          <div class="form-group"><label class="form-label">Lesson Count <span class="req">*</span></label><input type="number" name="lesson_count" class="form-control" required min="1" placeholder="10"></div>
+          <div class="form-group"><label class="form-label">Validity (days) <span class="req">*</span></label><input type="number" name="validity_days" class="form-control" required min="1" placeholder="90"></div>
+          <div class="form-group"><label class="form-label">Transmission</label>
+            <select name="transmission_type" class="form-control">
+              <option value="both">Manual & Automatic</option>
+              <option value="manual">Manual Only</option>
+              <option value="automatic">Automatic Only</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
+          <label class="form-check"><input type="checkbox" name="includes_yard_test" id="chk-yard"><span class="form-check-label">Includes Yard Test</span></label>
+          <label class="form-check"><input type="checkbox" name="includes_road_test" id="chk-road"><span class="form-check-label">Includes Road Test</span></label>
+          <label class="form-check"><input type="checkbox" name="is_popular" id="chk-popular"><span class="form-check-label">Mark as Popular</span></label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="pkg-modal">Cancel</button>
+      <button class="btn btn-primary" id="pkg-save-btn" onclick="savePackage()"><i class="fas fa-save"></i> Save Package</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allPackages = [];
+
+async function loadPackages() {
+  try {
+    const data = await api('/api/admin/packages');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; 
+    if (u && u.firstName && u.lastName) {
+      const init = u.firstName[0]+u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+      ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    }
+
+    allPackages = data.packages || [];
+    const prices = allPackages.map(p=>parseFloat(p.price));
+    document.getElementById('p-total').textContent = allPackages.length;
+    document.getElementById('p-active').textContent = allPackages.filter(p=>p.is_active).length;
+    document.getElementById('p-min').textContent = prices.length ? 'R'+Math.min(...prices).toFixed(0) : '—';
+    document.getElementById('p-max').textContent = prices.length ? 'R'+Math.max(...prices).toFixed(0) : '—';
+
+    const grid = document.getElementById('packages-grid');
+    if (allPackages.length) {
+      grid.innerHTML = allPackages.map(p => `
+        <div class="card" style="position:relative;${p.is_popular?'border:2px solid var(--accent)':''}">
+          ${p.is_popular ? '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--primary);font-size:.7rem;font-weight:700;padding:3px 14px;border-radius:100px;white-space:nowrap">⭐ Most Popular</div>' : ''}
+          <div class="card-body" style="padding-top:${p.is_popular?'24px':'20px'}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+              <div>
+                <div style="font-family:var(--ff-head);font-size:1.05rem;font-weight:700;color:var(--primary)">${p.name}</div>
+                <div style="font-size:.78rem;color:var(--gray-400);margin-top:2px">${p.description||''}</div>
+              </div>
+              <span class="badge ${p.is_active?'badge-success':'badge-danger'}">${p.is_active?'Active':'Inactive'}</span>
+            </div>
+
+            <div style="background:var(--gray-50);border-radius:var(--r-sm);padding:14px;margin-bottom:14px;text-align:center">
+              <div style="font-family:var(--ff-head);font-size:2.2rem;font-weight:800;color:var(--primary)">R${parseFloat(p.price).toFixed(0)}</div>
+              <div style="font-size:.78rem;color:var(--gray-400)">${p.lesson_count} lessons · Valid ${p.validity_days} days</div>
+            </div>
+
+            <div style="display:grid;gap:6px;font-size:.82rem;margin-bottom:14px">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--gray-500)">Transmission</span><span style="font-weight:600">${p.transmission_type==='both'?'Manual & Auto':p.transmission_type}</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--gray-500)">Yard Test</span><span style="color:${p.includes_yard_test?'var(--success)':'var(--gray-300)'}">${p.includes_yard_test?'✓ Included':'✗ Not included'}</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--gray-500)">Road Test</span><span style="color:${p.includes_road_test?'var(--success)':'var(--gray-300)'}">${p.includes_road_test?'✓ Included':'✗ Not included'}</span></div>
+            </div>
+
+            <!-- ⭐ BUTTONS WITH DATA ATTRIBUTES (no inline onclick) -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button data-action="edit" data-id="${p.id}" class="btn btn-sm btn-dark" style="flex:1 1 90px">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button data-action="toggle" data-id="${p.id}" data-active="${p.is_active}" class="btn btn-sm" style="flex:1 1 110px;background:${p.is_active?'rgba(220,38,38,.1)':'rgba(22,163,74,.1)'};color:${p.is_active?'var(--danger)':'var(--success)'};border:1px solid ${p.is_active?'rgba(220,38,38,.2)':'rgba(22,163,74,.2)'}">
+                ${p.is_active?'Deactivate':'Activate'}
+              </button>
+              <button data-action="delete" data-id="${p.id}" class="btn btn-sm" style="flex:1 1 90px;background:var(--danger);color:#fff">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+        </div>`).join('');
+    } else {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:56px"><div class="empty-state-icon">📦</div><div class="empty-state-title">No packages yet</div><div class="empty-state-desc">Click "New Package" to create one.</div></div>';
+    }
+  } catch(err) { console.error(err); }
+}
+
+function editPackage(id) {
+  const pkg = allPackages.find(p=>p.id===id);
+  if (!pkg) return;
+  document.getElementById('pkg-modal-title').textContent = '✏️ Edit Package';
+  document.getElementById('pkg-edit-id').value = id;
+  const form = document.getElementById('pkg-form');
+  form.querySelector('[name=name]').value = pkg.name;
+  form.querySelector('[name=price]').value = pkg.price;
+  form.querySelector('[name=description]').value = pkg.description||'';
+  form.querySelector('[name=lesson_count]').value = pkg.lesson_count;
+  form.querySelector('[name=validity_days]').value = pkg.validity_days;
+  form.querySelector('[name=transmission_type]').value = pkg.transmission_type;
+  document.getElementById('chk-yard').checked = pkg.includes_yard_test;
+  document.getElementById('chk-road').checked = pkg.includes_road_test;
+  document.getElementById('chk-popular').checked = pkg.is_popular;
+  Modal.open('pkg-modal');
+}
+
+async function savePackage() {
+  const editId = document.getElementById('pkg-edit-id').value;
+  const form = document.getElementById('pkg-form');
+  const fd = new FormData(form);
+  const body = {
+    name: fd.get('name'), 
+    price: fd.get('price'), 
+    description: fd.get('description'),
+    lesson_count: fd.get('lesson_count'), 
+    validity_days: fd.get('validity_days'),
+    transmission_type: fd.get('transmission_type'),
+    includes_yard_test: document.getElementById('chk-yard').checked,
+    includes_road_test: document.getElementById('chk-road').checked,
+    is_popular: document.getElementById('chk-popular').checked,
+    is_active: true
+  };
+  if (!body.name||!body.price||!body.lesson_count) { Toast.warning('Fill in all required fields.'); return; }
+  const url = editId ? `/api/admin/packages/${editId}` : '/api/admin/packages';
+  const method = editId ? 'PUT' : 'POST';
+  const data = await api(url, { method, body });
+  if (data.success) {
+    Toast.success(editId ? 'Package updated!' : 'Package created!');
+    Modal.close('pkg-modal');
+    document.getElementById('pkg-edit-id').value = '';
+    document.getElementById('pkg-modal-title').textContent = '📦 New Package';
+    form.reset();
+    loadPackages();
+  } else Toast.error(data.error);
+}
+
+async function togglePackage(id, active) {
+  const pkg = allPackages.find(p=>p.id===id);
+  if (!pkg) return;
+  const data = await api(`/api/admin/packages/${id}`, { method:'PUT', body: { ...pkg, is_active: !active } });
+  if (data.success) { Toast.success('Package updated.'); loadPackages(); }
+  else Toast.error(data.error);
+}
+
+async function deletePackage(id) {
+  if (!confirm('Delete this package permanently?')) return;
+  const data = await api(`/api/admin/packages/${id}`, { method:'DELETE' });
+  if (data.success) { Toast.success('Package deleted.'); loadPackages(); }
+  else Toast.error(data.error);
+}
+
+// ─── Reset modal on open ──────────────────────────────────
+document.querySelector('[data-open="pkg-modal"]')?.addEventListener('click', () => {
+  document.getElementById('pkg-edit-id').value = '';
+  document.getElementById('pkg-modal-title').textContent = '📦 New Package';
+  document.getElementById('pkg-form').reset();
+});
+
+// ─── ⭐ EVENT DELEGATION FOR PACKAGE BUTTONS ──────────────
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  
+  const action = btn.dataset.action;
+  const id = btn.dataset.id;
+  
+  if (action === 'edit') {
+    editPackage(id);
+  } else if (action === 'toggle') {
+    const active = btn.dataset.active === 'true';
+    togglePackage(id, active);
+  } else if (action === 'delete') {
+    deletePackage(id);
+  }
+});
+
+// ─── ⭐ FIX SAVE PACKAGE BUTTON ────────────────────────────
+document.getElementById('pkg-save-btn')?.addEventListener('click', savePackage);
+
+loadPackages();
+</script>
+</body>
+</html>

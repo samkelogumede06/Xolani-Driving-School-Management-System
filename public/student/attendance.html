@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Attendance — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">🎓 Student Portal</div></div></div>
+    <button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Main</div>
+    <a href="/student/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-home"></i></span> Dashboard</a>
+    <a href="/student/lessons.html" class="nav-item"><span class="ni"><i class="fas fa-car"></i></span> My Lessons</a>
+    <a href="/student/book-lesson.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-plus"></i></span> Book Lesson</a>
+    <a href="/student/attendance.html" class="nav-item active"><span class="ni"><i class="fas fa-calendar-check"></i></span> Attendance</a>
+    <a href="/student/progress.html" class="nav-item"><span class="ni"><i class="fas fa-chart-line"></i></span> My Progress</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/student/payments.html" class="nav-item"><span class="ni"><i class="fas fa-credit-card"></i></span> Payments</a>
+    <a href="/student/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications <span class="nav-badge notif-badge" style="display:none">0</span></a>
+    <a href="/student/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> My Profile</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">ST</div><div><div class="sb-name" id="sb-name">Student</div><div class="sb-role">Student</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Attendance History</div><div class="pg-sub">Track your lesson attendance record</div></div></div>
+    <div class="topbar-right"><a href="/student/notifications.html" class="tb-action"><i class="fas fa-bell"></i><span class="notif-dot notif-badge" style="display:none">0</span></a><div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">ST</div><span class="tb-name" id="tb-name">Student</span><div class="dropdown-menu" id="user-dd"><a href="/student/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div></div>
+  </header>
+  <div class="page-content">
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-check" style="color:var(--success)"></i></div><div><div class="stat-val" id="stat-present">—</div><div class="stat-lbl">Present</div></div></div>
+      <div class="stat-card"><div class="stat-ico red"><i class="fas fa-times" style="color:var(--danger)"></i></div><div><div class="stat-val" id="stat-absent">—</div><div class="stat-lbl">Absent</div></div></div>
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-percent" style="color:var(--info)"></i></div><div><div class="stat-val" id="stat-rate">—</div><div class="stat-lbl">Attendance Rate</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-qrcode" style="color:var(--accent)"></i></div><div><div class="stat-val" id="stat-qr">—</div><div class="stat-lbl">QR Scans</div></div></div>
+    </div>
+    <!-- Attendance Rate Visual -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-title">📈 Attendance Rate</div></div>
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-family:var(--ff-head);font-size:3rem;font-weight:800;color:var(--primary)" id="big-rate">—%</div>
+            <div style="font-size:.78rem;color:var(--gray-400)">Overall Rate</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:6px"><span>Present</span><span id="bar-text">—</span></div>
+            <div class="progress progress-lg"><div class="progress-bar green" id="attendance-bar" style="width:0%;transition:width 1s ease"></div></div>
+            <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:6px;font-size:.78rem"><div style="width:10px;height:10px;border-radius:2px;background:var(--success)"></div> Present</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:.78rem"><div style="width:10px;height:10px;border-radius:2px;background:var(--danger)"></div> Absent</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:.78rem"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent)"></div> QR Scanned</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-calendar-check" style="color:var(--accent)"></i> Attendance Log</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Time</th><th>Lesson Type</th><th>Instructor</th><th>Method</th><th>Status</th></tr></thead>
+          <tbody id="attendance-tbody"><tr><td colspan="6" style="text-align:center;padding:28px"><span class="spinner spinner-dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+async function loadAttendance() {
+  try {
+    const data = await api('/api/student/attendance');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; const init = u.firstName[0] + u.lastName[0];
+    ['sb-avatar','tb-avatar'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=init; });
+    ['sb-name','tb-name'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=u.firstName+' '+u.lastName; });
+    const s = data.stats;
+    document.getElementById('stat-present').textContent = s.present;
+    document.getElementById('stat-absent').textContent = s.absent;
+    document.getElementById('stat-rate').textContent = s.attendanceRate + '%';
+    document.getElementById('stat-qr').textContent = s.qrScans || 0;
+    document.getElementById('big-rate').textContent = s.attendanceRate + '%';
+    document.getElementById('bar-text').textContent = `${s.present} of ${s.totalLessons} lessons`;
+    document.getElementById('attendance-bar').style.width = s.attendanceRate + '%';
+    const tbody = document.getElementById('attendance-tbody');
+    if (data.attendance?.length) {
+      tbody.innerHTML = data.attendance.map(l => `
+        <tr>
+          <td style="font-weight:600">${fmtDate(l.scheduled_date)}</td>
+          <td>${fmtTime(l.scheduled_time)}</td>
+          <td><span class="badge badge-info">${(l.lesson_type||'').replace('_',' ')}</span></td>
+          <td>${l.instructor_name || '—'}</td>
+          <td><span class="badge ${l.attendance_method==='qr'?'badge-success':'badge-gray'}">${l.attendance_method==='qr'?'📲 QR Scan':'✍️ Manual'}</span></td>
+          <td><span class="badge ${l.status==='completed'?'badge-success':l.status==='no_show'?'badge-danger':'badge-warning'}">${l.status}</span></td>
+        </tr>`).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><div class="empty-state-icon">📋</div><div class="empty-state-title">No attendance records yet</div></td></tr>';
+    }
+  } catch(err) { console.error(err); }
+}
+loadAttendance();
+</script>
+</body>
+</html>

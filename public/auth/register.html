@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Register — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="auth-layout">
+  <!-- LEFT -->
+  <div class="auth-left">
+    <a href="/" class="nav-logo" style="margin-bottom:auto">
+      <div class="nav-logo-icon">X</div>
+      <div class="nav-logo-text"><div class="brand-main" style="color:#fff">Xolani Driving School</div><div class="brand-sub">KwaZulu-Natal</div></div>
+    </a>
+    <div style="position:relative;z-index:2;margin:48px 0">
+      <div style="font-size:3.5rem;margin-bottom:20px">🎓</div>
+      <h2 style="color:#fff;font-size:1.8rem;margin-bottom:12px">Start your journey<br>to driving freedom.</h2>
+      <p style="color:rgba(255,255,255,.65);font-size:.92rem;line-height:1.7">Creating your free account takes 60 seconds. Once registered you can book lessons, track progress with AI, and access everything from your phone.</p>
+    </div>
+    <div style="display:grid;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.7);font-size:.86rem"><span style="width:28px;height:28px;background:rgba(245,166,35,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;flex-shrink:0">1</span>Register free in 60 seconds</div>
+      <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.7);font-size:.86rem"><span style="width:28px;height:28px;background:rgba(245,166,35,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;flex-shrink:0">2</span>Choose your package & branch</div>
+      <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.7);font-size:.86rem"><span style="width:28px;height:28px;background:rgba(245,166,35,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;flex-shrink:0">3</span>Get your first lesson within 48 hrs</div>
+      <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.7);font-size:.86rem"><span style="width:28px;height:28px;background:rgba(245,166,35,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;flex-shrink:0">4</span>Track your AI readiness score</div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="auth-right" style="align-items:flex-start;padding-top:40px;overflow-y:auto">
+    <div class="auth-form-wrap">
+      <h1 class="auth-title">Create Your Account</h1>
+      <p class="auth-sub">Free registration. No credit card required.</p>
+
+      <div class="alert alert-error" id="reg-error" style="display:none"></div>
+      <div class="alert alert-success" id="reg-success" style="display:none"></div>
+
+      <form id="register-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name <span class="req">*</span></label>
+            <input type="text" name="first_name" id="first-name" class="form-control" placeholder="Sipho" required>
+            <div id="first-name-error" class="form-error">Please enter a valid name (letters only, min 2 characters).</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name <span class="req">*</span></label>
+            <input type="text" name="last_name" id="last-name" class="form-control" placeholder="Nkosi" required>
+            <div id="last-name-error" class="form-error">Please enter a valid name (letters only, min 2 characters).</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address <span class="req">*</span></label>
+          <input type="email" name="email" id="email-input" class="form-control" placeholder="you@example.com" required autocomplete="email">
+          <div id="email-error" class="form-error">Please enter a valid email address (e.g., name@domain.com).</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number <span class="req">*</span></label>
+          <input type="tel" name="phone" id="phone-input" class="form-control" placeholder="0821234567" required maxlength="10">
+          <div id="phone-error" class="form-error">Please enter a valid 10-digit phone number starting with 0 (e.g., 0821234567).</div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" name="date_of_birth" id="dob-input" class="form-control">
+          <div id="dob-error" class="form-error">You must be at least 18 years old to register.</div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Preferred Branch <span class="req">*</span></label>
+          <select name="branch_id" id="branch-select" class="form-control" required>
+            <option value="">— Select Your Branch —</option>
+            <option value="" disabled>Loading branches...</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Password <span class="req">*</span></label>
+            <div style="position:relative">
+              <input type="password" name="password" id="pw1" class="form-control" placeholder="Min. 8 characters" required minlength="8" style="padding-right:42px">
+              <button type="button" data-toggle-pw="pw1" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:.9rem"><i class="fas fa-eye"></i></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password <span class="req">*</span></label>
+            <div style="position:relative">
+              <input type="password" name="confirm_password" id="pw2" class="form-control" placeholder="Repeat password" required style="padding-right:42px">
+              <button type="button" data-toggle-pw="pw2" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:.9rem"><i class="fas fa-eye"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password strength -->
+        <div style="margin-bottom:16px">
+          <div style="display:flex;gap:4px;margin-bottom:4px">
+            <div class="pw-bar" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100)" id="pb1"></div>
+            <div class="pw-bar" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100)" id="pb2"></div>
+            <div class="pw-bar" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100)" id="pb3"></div>
+            <div class="pw-bar" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100)" id="pb4"></div>
+          </div>
+          <div id="pw-strength-label" style="font-size:.72rem;color:var(--gray-400)">Enter a password to see strength</div>
+        </div>
+
+        <div class="form-check" style="margin-bottom:20px;align-items:flex-start">
+          <input type="checkbox" id="terms" name="terms" required style="margin-top:3px">
+          <label for="terms" style="font-size:.82rem;color:var(--gray-600)">I agree to the <a href="#" class="auth-link">Terms & Conditions</a> and <a href="#" class="auth-link">Privacy Policy</a> of Xolani Driving School.</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg"><i class="fas fa-user-plus"></i> Create My Free Account</button>
+      </form>
+
+      <div class="auth-divider">already registered?</div>
+      <a href="/auth/login.html" class="btn btn-dark btn-block"><i class="fas fa-sign-in-alt"></i> Sign In to Your Account</a>
+      <p style="text-align:center;margin-top:16px;font-size:.78rem;color:var(--gray-400)"><a href="/" class="auth-link" style="font-weight:500">← Back to Website</a></p>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+// ─── Password Toggle Function ──────────────────────────────
+function togglePassword(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  const icon = btn.querySelector('i');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+}
+
+// ⭐ FIX: Use event listeners instead of inline onclick
+document.addEventListener('DOMContentLoaded', function() {
+  // Password toggle buttons
+  const toggleBtns = document.querySelectorAll('[data-toggle-pw]');
+  toggleBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const inputId = this.dataset.togglePw;
+      togglePassword(inputId, this);
+    });
+  });
+});
+
+// ════════════════════════════════════════════════════════════
+// ⭐ NEW: Input Validation Functions
+// ════════════════════════════════════════════════════════════
+
+// ─── Name Validation (Only Letters, Spaces, Min 2 characters) ──
+function validateNameInput(input, errorId) {
+  const errorEl = document.getElementById(errorId);
+  const value = input.value;
+  
+  // Remove any numbers or special characters as user types
+  const cleaned = value.replace(/[^a-zA-Z\s]/g, '');
+  if (value !== cleaned) {
+    input.value = cleaned;
+  }
+  
+  // Check if valid
+  const trimmed = input.value.trim();
+  if (trimmed.length > 0 && trimmed.length < 2) {
+    errorEl.style.display = 'block';
+    input.classList.add('is-invalid');
+    return false;
+  } else if (trimmed.length >= 2) {
+    errorEl.style.display = 'none';
+    input.classList.remove('is-invalid');
+    return true;
+  } else {
+    errorEl.style.display = 'none';
+    input.classList.remove('is-invalid');
+    return true; // Empty is allowed (will be caught by required attribute)
+  }
+}
+
+// ─── Email Validation ──────────────────────────────────────
+function validateEmailInput(input) {
+  const errorEl = document.getElementById('email-error');
+  const email = input.value.trim();
+  
+  // Simple but strict email validation
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+  if (email.length > 0 && !emailRegex.test(email)) {
+    errorEl.style.display = 'block';
+    input.classList.add('is-invalid');
+    return false;
+  } else {
+    errorEl.style.display = 'none';
+    input.classList.remove('is-invalid');
+    return true;
+  }
+}
+
+// ─── Phone Validation ──────────────────────────────────────
+function validatePhoneInput(input) {
+  const errorEl = document.getElementById('phone-error');
+  const value = input.value.trim();
+  
+  // Remove any non-digit characters as user types
+  const cleaned = value.replace(/\D/g, '');
+  if (value !== cleaned) {
+    input.value = cleaned;
+  }
+  
+  // Check if valid:
+  // 1. Must be exactly 10 digits
+  // 2. Must start with '0'
+  // 3. Must NOT start with '00'
+  // 4. Must NOT be all zeros (0000000000)
+  // 5. Must NOT start with '0' and the rest all zeros
+  const isValid = (
+    cleaned.length === 10 &&
+    cleaned[0] === '0' &&
+    cleaned[0] !== '0' || cleaned[1] !== '0' && // Not starting with '00'
+    cleaned !== '0000000000'
+  );
+  
+  // Re-evaluate with proper logic
+  const isValidPhone = (
+    cleaned.length === 10 &&
+    cleaned[0] === '0' &&
+    cleaned[1] !== '0' &&  // Not '00' at start
+    cleaned !== '0000000000'
+  );
+  
+  // For display, allow as user types but validate on submit/blur
+  if (value.length > 0 && !isValidPhone) {
+    errorEl.style.display = 'block';
+    input.classList.add('is-invalid');
+    return false;
+  } else {
+    errorEl.style.display = 'none';
+    input.classList.remove('is-invalid');
+    return value.length === 0 || isValidPhone; // Empty allowed (required attr catches)
+  }
+}
+
+// ─── Age Validation (18+) ──────────────────────────────────
+function validateAge(input) {
+  const errorEl = document.getElementById('dob-error');
+  const dob = input.value;
+  
+  if (!dob) {
+    errorEl.style.display = 'none';
+    input.classList.remove('is-invalid');
+    return true; // Optional field
+  }
+  
+  const birthDate = new Date(dob);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  if (age < 18) {
+    errorEl.style.display = 'block';
+    input.classList.add('is-invalid');
+    return false;
+  } else {
+    errorEl.style.display = 'none';
+    input.classList.remove('is-invalid');
+    return true;
+  }
+}
+
+// ─── Set Max Date for Date of Birth (18 years ago) ────────
+function setMaxDate() {
+  const dobInput = document.getElementById('dob-input');
+  const today = new Date();
+  const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  dobInput.max = maxDate.toISOString().split('T')[0];
+}
+
+// ════════════════════════════════════════════════════════════
+// ⭐ NEW: Attach Validation Event Listeners
+// ════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Set max date for DOB
+  setMaxDate();
+  
+  // First Name validation
+  const firstName = document.getElementById('first-name');
+  firstName.addEventListener('input', function() {
+    validateNameInput(this, 'first-name-error');
+  });
+  firstName.addEventListener('blur', function() {
+    validateNameInput(this, 'first-name-error');
+  });
+  
+  // Last Name validation
+  const lastName = document.getElementById('last-name');
+  lastName.addEventListener('input', function() {
+    validateNameInput(this, 'last-name-error');
+  });
+  lastName.addEventListener('blur', function() {
+    validateNameInput(this, 'last-name-error');
+  });
+  
+  // Email validation
+  const emailInput = document.getElementById('email-input');
+  emailInput.addEventListener('input', function() {
+    validateEmailInput(this);
+  });
+  emailInput.addEventListener('blur', function() {
+    validateEmailInput(this);
+  });
+  
+  // ⭐ Phone validation
+  const phoneInput = document.getElementById('phone-input');
+  phoneInput.addEventListener('input', function() {
+    validatePhoneInput(this);
+  });
+  phoneInput.addEventListener('blur', function() {
+    validatePhoneInput(this);
+  });
+  
+  // DOB validation
+  const dobInput = document.getElementById('dob-input');
+  dobInput.addEventListener('change', function() {
+    validateAge(this);
+  });
+  dobInput.addEventListener('blur', function() {
+    validateAge(this);
+  });
+});
+
+// ════════════════════════════════════════════════════════════
+// ─── Load Branches ────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+async function loadBranches() {
+  const select = document.getElementById('branch-select');
+  const errEl = document.getElementById('reg-error');
+  try {
+    const res = await fetch('/api/admin/branches');
+    const data = await res.json();
+    if (!data.success || !data.branches?.length) throw new Error(data.error || 'No branches found.');
+    select.innerHTML = '<option value="">Select Your Branch</option>';
+    data.branches.forEach(branch => {
+      const option = document.createElement('option');
+      option.value = branch.id;
+      option.textContent = branch.city ? `${branch.name} (${branch.city})` : branch.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    select.innerHTML = '<option value="">Branches unavailable</option>';
+    errEl.textContent = 'Could not load branches. Please refresh the page.';
+    errEl.style.display = 'block';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ─── Password Strength ──────────────────────────────────
+// ════════════════════════════════════════════════════════════
+document.getElementById('pw1').addEventListener('input', function() {
+  const v = this.value;
+  const bars = [1,2,3,4].map(n => document.getElementById('pb'+n));
+  const lbl = document.getElementById('pw-strength-label');
+  let score = 0;
+  if (v.length >= 8) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const colors = ['','#dc2626','#d97706','#16a34a','#0284c7'];
+  const labels = ['','Weak','Fair','Strong','Very Strong'];
+  bars.forEach((b,i) => b.style.background = i < score ? colors[score] : 'var(--gray-100)');
+  lbl.textContent = v.length ? labels[score] : 'Enter a password to see strength';
+  lbl.style.color = colors[score] || 'var(--gray-400)';
+});
+
+// ════════════════════════════════════════════════════════════
+// ─── Registration Form Submission ────────────────────────
+// ════════════════════════════════════════════════════════════
+document.getElementById('register-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const errEl = document.getElementById('reg-error');
+  const okEl = document.getElementById('reg-success');
+  errEl.style.display = 'none';
+  okEl.style.display = 'none';
+  
+  // ─── Validate All Fields Before Submission ──────────────
+  
+  // 1. First Name
+  const firstName = document.getElementById('first-name');
+  if (!validateNameInput(firstName, 'first-name-error')) {
+    errEl.textContent = 'Please enter a valid first name (letters only, min 2 characters).';
+    errEl.style.display = 'block';
+    firstName.focus();
+    return;
+  }
+  
+  // 2. Last Name
+  const lastName = document.getElementById('last-name');
+  if (!validateNameInput(lastName, 'last-name-error')) {
+    errEl.textContent = 'Please enter a valid last name (letters only, min 2 characters).';
+    errEl.style.display = 'block';
+    lastName.focus();
+    return;
+  }
+  
+  // 3. Email
+  const emailInput = document.getElementById('email-input');
+  if (!validateEmailInput(emailInput)) {
+    errEl.textContent = 'Please enter a valid email address (e.g., name@domain.com).';
+    errEl.style.display = 'block';
+    emailInput.focus();
+    return;
+  }
+  
+  // ⭐ 4. Phone
+  const phoneInput = document.getElementById('phone-input');
+  const phoneValue = phoneInput.value.trim();
+  const phoneCleaned = phoneValue.replace(/\D/g, '');
+  
+  // Validate phone: exactly 10 digits, starts with 0, not '00', not all zeros
+  const isValidPhone = (
+    phoneCleaned.length === 10 &&
+    phoneCleaned[0] === '0' &&
+    phoneCleaned[1] !== '0' &&
+    phoneCleaned !== '0000000000'
+  );
+  
+  if (!isValidPhone) {
+    errEl.textContent = 'Please enter a valid 10-digit phone number starting with 0 (e.g., 0821234567).';
+    errEl.style.display = 'block';
+    phoneInput.focus();
+    return;
+  }
+  
+  // 5. Date of Birth (Age 18+)
+  const dobInput = document.getElementById('dob-input');
+  if (dobInput.value && !validateAge(dobInput)) {
+    errEl.textContent = 'You must be at least 18 years old to register.';
+    errEl.style.display = 'block';
+    dobInput.focus();
+    return;
+  }
+  
+  // 6. Password
+  const pw = document.getElementById('pw1').value;
+  const cpw = document.getElementById('pw2').value;
+  
+  if (pw !== cpw) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block';
+    document.getElementById('pw2').focus();
+    return;
+  }
+  
+  if (pw.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    errEl.style.display = 'block';
+    document.getElementById('pw1').focus();
+    return;
+  }
+  
+  // 7. Branch
+  const branch = document.getElementById('branch-select').value;
+  if (!branch) {
+    errEl.textContent = 'Please select a branch.';
+    errEl.style.display = 'block';
+    document.getElementById('branch-select').focus();
+    return;
+  }
+  
+  // ─── Submit Form ──────────────────────────────────────────
+  const fd = new FormData(this);
+  const btn = this.querySelector('[type=submit]');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Creating Account…';
+  
+  try {
+    const res = await fetch('/auth/register', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.fromEntries(fd))
+    });
+    const data = await res.json();
+    if (data.success) {
+      okEl.textContent = 'Account created! Check your email to verify, then login.';
+      okEl.style.display = 'block';
+      this.reset();
+      // Reset password strength bars
+      document.querySelectorAll('.pw-bar').forEach(b => b.style.background = 'var(--gray-100)');
+      document.getElementById('pw-strength-label').textContent = 'Enter a password to see strength';
+      document.getElementById('pw-strength-label').style.color = 'var(--gray-400)';
+      setTimeout(() => window.location.href = '/auth/login.html', 2500);
+    } else { 
+      errEl.textContent = data.error || 'Registration failed.'; 
+      errEl.style.display = 'block'; 
+    }
+  } catch (err) {
+    errEl.textContent = 'Network error. Please try again.'; 
+    errEl.style.display = 'block'; 
+  } finally { 
+    btn.disabled = false; 
+    btn.innerHTML = orig; 
+  }
+});
+
+// ─── Load branches on page load ────────────────────────────
+loadBranches();
+</script>
+</body>
+</html>

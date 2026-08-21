@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Payments — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div><a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item active"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Payments</div><div class="pg-sub">Record and manage student payments</div></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" data-open="payment-modal"><i class="fas fa-plus"></i> Record Payment</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span><div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <!-- REVENUE CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px">
+      <div style="background:linear-gradient(135deg,var(--success),#15803d);border-radius:var(--r-lg);padding:20px;color:#fff">
+        <div style="font-size:.7rem;opacity:.7;margin-bottom:4px;text-transform:uppercase">Month Revenue</div>
+        <div style="font-family:var(--ff-head);font-size:1.8rem;font-weight:800" id="rev-month">R—</div>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--info),#0369a1);border-radius:var(--r-lg);padding:20px;color:#fff">
+        <div style="font-size:.7rem;opacity:.7;margin-bottom:4px;text-transform:uppercase">Total Revenue</div>
+        <div style="font-family:var(--ff-head);font-size:1.8rem;font-weight:800" id="rev-total">R—</div>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--danger),#b91c1c);border-radius:var(--r-lg);padding:20px;color:#fff">
+        <div style="font-size:.7rem;opacity:.7;margin-bottom:4px;text-transform:uppercase">Outstanding</div>
+        <div style="font-family:var(--ff-head);font-size:1.8rem;font-weight:800" id="rev-outstanding">R—</div>
+      </div>
+      <div style="background:#fff;border-radius:var(--r-lg);padding:20px;border:1px solid var(--gray-100);box-shadow:var(--sh)">
+        <div style="font-size:.7rem;color:var(--gray-400);margin-bottom:4px;text-transform:uppercase">Transactions</div>
+        <div style="font-family:var(--ff-head);font-size:1.8rem;font-weight:800;color:var(--primary)" id="rev-count">—</div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-bar">
+      <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="pay-search" class="form-control" placeholder="Search student…" style="min-width:200px"></div>
+      <input type="date" id="from-date" class="form-control" style="width:auto">
+      <span style="color:var(--gray-400);font-size:.84rem">to</span>
+      <input type="date" id="to-date" class="form-control" style="width:auto">
+      <select id="method-filter" class="form-control" style="width:auto"><option value="">All Methods</option><option value="cash">Cash</option><option value="eft">EFT</option><option value="card">Card</option><option value="online">Online</option></select>
+      <button id="apply-filters-btn" class="btn btn-dark btn-sm"><i class="fas fa-filter"></i> Filter</button>
+      <button id="export-payments-btn" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-download"></i> Export</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-receipt" style="color:var(--accent)"></i> Payment Records</div><span id="pay-count" class="badge badge-primary">Loading…</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Student</th><th>Description</th><th>Reference</th><th>Method</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="payments-tbody"><tr><td colspan="7" style="text-align:center;padding:36px"><span class="spinner spinner-dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- RECORD PAYMENT MODAL -->
+<div class="modal-overlay" id="payment-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title"><i class="fas fa-money-bill" style="color:var(--accent)"></i> Record Payment</div><button class="modal-close" data-close="payment-modal">✕</button></div>
+    <div class="modal-body">
+      <form id="payment-form">
+        <div class="form-group"><label class="form-label">Student <span class="req">*</span></label><select name="student_id" class="form-control" required id="pay-student"><option value="">— Select Student —</option></select></div>
+        <div class="form-group"><label class="form-label">Enrollment (optional)</label><select name="enrollment_id" class="form-control" id="pay-enrollment"><option value="">— Link to Enrollment —</option></select></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Amount (R) <span class="req">*</span></label><input type="number" name="amount" class="form-control" min="0" step="0.01" required placeholder="0.00"></div>
+          <div class="form-group"><label class="form-label">Payment Method <span class="req">*</span></label>
+            <select name="payment_method" class="form-control" required>
+              <option value="cash">Cash</option><option value="eft">EFT</option><option value="card">Card</option><option value="online">Online</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reference Number</label><input type="text" name="reference_number" class="form-control" placeholder="Bank ref or receipt number"></div>
+        <div class="form-group"><label class="form-label">Branch <span class="req">*</span></label><select name="branch_id" class="form-control" required id="pay-branch"><option value="">— Select Branch —</option></select></div>
+        <div class="form-group"><label class="form-label">Description</label><input type="text" name="description" class="form-control" placeholder="e.g. Standard Pack deposit, Lesson 3 payment…"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="payment-modal">Cancel</button>
+      <button class="btn btn-primary" id="payment-save-btn"><i class="fas fa-check"></i> Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allPayments = [];
+
+async function loadPayments() {
+  try {
+    const data = await api('/api/admin/payments');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; 
+    if (u && u.firstName && u.lastName) {
+      const init = u.firstName[0]+u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+      ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    }
+    allPayments = data.payments || [];
+    document.getElementById('rev-month').textContent = 'R' + parseFloat(data.monthRevenue||0).toFixed(2);
+    document.getElementById('rev-total').textContent = 'R' + parseFloat(data.totalRevenue||0).toFixed(2);
+    document.getElementById('rev-outstanding').textContent = 'R' + parseFloat(data.totalOutstanding||0).toFixed(2);
+    document.getElementById('rev-count').textContent = allPayments.length;
+    renderPayments(allPayments);
+
+    // Populate dropdowns
+    const ps = document.getElementById('pay-student');
+    if (ps.options.length <= 1) {
+      (data.students||[]).forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.first_name+' '+s.last_name;ps.appendChild(o);});
+    }
+    const bs = document.getElementById('pay-branch');
+    if (bs.options.length <= 1) {
+      (data.branches||[]).forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name;bs.appendChild(o);});
+    }
+  } catch(err) { console.error(err); }
+}
+
+function renderPayments(payments) {
+  const tbody = document.getElementById('payments-tbody');
+  document.getElementById('pay-count').textContent = payments.length + ' record(s)';
+  if (!payments.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="empty-state-icon">💳</div><div class="empty-state-title">No payments found</div></td></tr>';
+    return;
+  }
+  const mIcons = {cash:'💵',eft:'🏦',card:'💳',online:'🌐'};
+  tbody.innerHTML = payments.map(p => `
+    <tr>
+      <td style="font-weight:600">${fmtDate(p.payment_date)}</td>
+      <td>
+        <div style="font-weight:600;font-size:.86rem">${p.student_name||'—'}</div>
+        <div style="font-size:.72rem;color:var(--gray-400)">${p.student_phone||''}</div>
+      </td>
+      <td style="font-size:.84rem">${p.description||'Lesson Payment'}</td>
+      <td style="font-size:.76rem;color:var(--gray-400)">${p.reference_number||'—'}</td>
+      <td><span class="badge badge-gray">${mIcons[p.payment_method]||''} ${p.payment_method||'—'}</span></td>
+      <td style="font-weight:700;font-size:1rem;color:var(--success)">R${parseFloat(p.amount).toFixed(2)}</td>
+      <td><span class="badge badge-${p.status==='completed'?'success':p.status==='pending'?'warning':'danger'}">${p.status}</span></td>
+    </tr>`).join('');
+}
+
+// ─── Apply Filters ──────────────────────────────────────────
+function applyFilters() {
+  const q = document.getElementById('pay-search').value.toLowerCase();
+  const from = document.getElementById('from-date').value;
+  const to = document.getElementById('to-date').value;
+  const method = document.getElementById('method-filter').value;
+  const filtered = allPayments.filter(p => {
+    const matchQ = !q || (p.student_name||'').toLowerCase().includes(q);
+    const matchFrom = !from || new Date(p.payment_date) >= new Date(from);
+    const matchTo = !to || new Date(p.payment_date) <= new Date(to+'T23:59:59');
+    const matchM = !method || p.payment_method === method;
+    return matchQ && matchFrom && matchTo && matchM;
+  });
+  renderPayments(filtered);
+}
+
+// ─── Record Payment ─────────────────────────────────────────
+async function recordPayment() {
+  const form = document.getElementById('payment-form');
+  const fd = new FormData(form);
+  const body = Object.fromEntries(fd);
+  if (!body.student_id || !body.amount || !body.payment_method || !body.branch_id) { Toast.warning('Fill in all required fields.'); return; }
+  const data = await api('/api/admin/payments', { body });
+  if (data.success) { Toast.success('Payment recorded!'); Modal.close('payment-modal'); form.reset(); loadPayments(); }
+  else Toast.error(data.error);
+}
+
+// ─── Export Payments ────────────────────────────────────────
+function exportPayments() {
+  const csv = ['Date,Student,Description,Reference,Method,Amount,Status',
+    ...allPayments.map(p=>`"${fmtDate(p.payment_date)}","${p.student_name||''}","${p.description||''}","${p.reference_number||''}","${p.payment_method||''}","${p.amount}","${p.status}"`)
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'payments-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  Toast.success('Exported to CSV.');
+}
+
+// ─── Load Enrollments when student is selected ─────────────
+async function loadEnrollmentsForStudent(studentId) {
+  const enrSel = document.getElementById('pay-enrollment');
+  enrSel.innerHTML = '<option value="">— Link to Enrollment —</option>';
+  if (!studentId) return;
+  try {
+    const eData = await api(`/api/admin/students/${studentId}/enrollments`);
+    (eData.enrollments||[]).forEach(e=>{
+      const o=document.createElement('option');
+      o.value=e.id;
+      o.textContent=`${e.package_name} (Balance: R${e.balance_due||0})`;
+      enrSel.appendChild(o);
+    });
+  } catch(err) {
+    console.error('Error loading enrollments:', err);
+  }
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Load payments
+  loadPayments();
+
+  // ─── Filter button ──────────────────────────────────────
+  document.getElementById('apply-filters-btn')?.addEventListener('click', applyFilters);
+
+  // ─── Export button ──────────────────────────────────────
+  document.getElementById('export-payments-btn')?.addEventListener('click', exportPayments);
+
+  // ─── Record Payment button ─────────────────────────────
+  document.getElementById('payment-save-btn')?.addEventListener('click', recordPayment);
+
+  // ─── Student dropdown change (load enrollments) ────────
+  document.getElementById('pay-student')?.addEventListener('change', function() {
+    loadEnrollmentsForStudent(this.value);
+  });
+
+  // ─── Search on Enter key ───────────────────────────────
+  document.getElementById('pay-search')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyFilters();
+    }
+  });
+
+  console.log('✅ Payments page initialized!');
+});
+</script>
+</body>
+</html>

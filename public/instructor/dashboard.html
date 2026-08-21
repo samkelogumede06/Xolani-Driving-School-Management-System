@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Instructor Dashboard | Xolani Driving School</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">Instructor Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Work</div>
+    <a href="/instructor/dashboard.html" class="nav-item active"><span class="ni"><i class="fas fa-calendar-check"></i></span> Lessons</a>
+    <a href="/instructor/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/instructor/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/instructor/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/instructor/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> Profile</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">IN</div><div><div class="sb-name" id="sb-name">Instructor</div><div class="sb-role">Instructor</div></div><a href="/auth/logout" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Instructor Lessons</div><div class="pg-sub">Assigned lessons, attendance, QR codes and performance notes</div></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-outline" id="availability-btn"><i class="fas fa-toggle-on"></i> Availability</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">IN</div><span class="tb-name" id="tb-name">Instructor</span><div class="dropdown-menu" id="user-dd"><a href="/instructor/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a><a href="/auth/logout" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+  <div class="page-content">
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-calendar-day" style="color:var(--info)"></i></div><div><div class="stat-val" id="stat-today">0</div><div class="stat-lbl">Today</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-calendar-alt" style="color:var(--success)"></i></div><div><div class="stat-val" id="stat-upcoming">0</div><div class="stat-lbl">Upcoming</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-check" style="color:var(--accent)"></i></div><div><div class="stat-val" id="stat-completed">0</div><div class="stat-lbl">Completed</div></div></div>
+      <div class="stat-card"><div class="stat-ico purple"><i class="fas fa-star" style="color:#9333ea"></i></div><div><div class="stat-val" id="stat-pending">0</div><div class="stat-lbl">Need Scores</div></div></div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-title"><i class="fas fa-calendar-day" style="color:var(--accent)"></i> Today's Lessons</div></div>
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Student</th><th>Vehicle</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody id="today-body"><tr><td colspan="6" style="text-align:center;padding:30px"><span class="spinner spinner-dark"></span></td></tr></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-calendar-alt" style="color:var(--accent)"></i> Upcoming Lessons</div></div>
+      <div id="upcoming-list" class="card-body" style="display:grid;gap:10px"></div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="modal-overlay" id="lesson-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Update Lesson</div><button class="modal-close" data-close="lesson-modal">x</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="lesson-id">
+      <div class="form-group"><label class="form-label">Status</label><select id="lesson-status" class="form-control"><option value="scheduled">Scheduled</option><option value="in_progress">In Progress</option><option value="completed">Completed</option><option value="no_show">No Show</option><option value="cancelled">Cancelled</option></select></div>
+      <div class="form-group"><label class="form-label">Student Score</label><input type="number" id="lesson-score" class="form-control" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Instructor Notes</label><textarea id="lesson-notes" class="form-control" rows="4"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline btn-sm" data-close="lesson-modal">Cancel</button><button class="btn btn-primary" id="save-lesson-btn"><i class="fas fa-save"></i> Save</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="qr-modal"><div class="modal"><div class="modal-header"><div class="modal-title">Attendance QR</div><button class="modal-close" data-close="qr-modal">x</button></div><div class="modal-body" style="text-align:center"><img id="qr-img" alt="Lesson QR" style="width:260px;max-width:100%"><div id="qr-meta" style="margin-top:10px;color:var(--gray-500);font-size:.85rem"></div></div></div></div>
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let lessons = [];
+let instructor = null;
+function initUser(u) {
+  const init = `${u.firstName?.[0]||'I'}${u.lastName?.[0]||'N'}`;
+  ['sb-avatar','tb-avatar'].forEach(id=>document.getElementById(id).textContent=init);
+  ['sb-name','tb-name'].forEach(id=>document.getElementById(id).textContent=u.fullName||`${u.firstName} ${u.lastName}`);
+  if (u.mustChangePassword) window.location.href = '/instructor/change-password.html';
+}
+function lessonRow(l) {
+  const colors = {scheduled:'badge-info',in_progress:'badge-warning',completed:'badge-success',no_show:'badge-danger',cancelled:'badge-gray'};
+  return `<tr><td><strong>${fmtTime(l.scheduled_time)}</strong><div style="font-size:.72rem;color:var(--gray-400)">${l.duration_minutes||60} min</div></td><td><strong>${l.student_name||'-'}</strong><div style="font-size:.72rem;color:var(--gray-400)">${l.student_phone||''}</div></td><td>${l.vehicle||'-'}</td><td>${(l.lesson_type||'').replace('_',' ')}</td><td><span class="badge ${colors[l.status]||'badge-gray'}">${(l.status||'').replace('_',' ')}</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-dark edit-lesson" data-id="${l.id}" title="Update Status"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline qr-lesson" data-id="${l.id}" title="Show QR"><i class="fas fa-qrcode"></i></button>${l.status === 'scheduled' ? `<button class="btn btn-sm cancel-lesson-btn" style="background:var(--danger);color:#fff" data-id="${l.id}" title="Cancel Lesson"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`;
+}
+async function loadDashboard() {
+  const data = await api('/api/instructor/dashboard');
+  if (!data.success) { window.location.href = '/auth/login.html'; return; }
+  initUser(data.user);
+  instructor = data.instructor;
+  lessons = [...(data.todayLessons||[]), ...(data.upcomingLessons||[])].filter((l,i,a)=>a.findIndex(x=>x.id===l.id)===i);
+  document.getElementById('stat-today').textContent = data.stats.today;
+  document.getElementById('stat-upcoming').textContent = data.stats.upcoming;
+  document.getElementById('stat-completed').textContent = data.stats.completed;
+  document.getElementById('stat-pending').textContent = data.stats.pendingScores;
+  document.getElementById('availability-btn').innerHTML = `<i class="fas fa-toggle-${instructor?.is_available?'on':'off'}"></i> ${instructor?.is_available?'Available':'Unavailable'}`;
+  document.getElementById('today-body').innerHTML = data.todayLessons.length ? data.todayLessons.map(lessonRow).join('') : '<tr><td colspan="6" class="table-empty">No lessons assigned today.</td></tr>';
+  document.getElementById('upcoming-list').innerHTML = data.upcomingLessons.length ? data.upcomingLessons.map(l=>`<div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--gray-100);border-radius:var(--r-sm);padding:12px"><div><strong>${l.student_name||'-'}</strong><div style="font-size:.78rem;color:var(--gray-500)">${fmtDate(l.scheduled_date)} at ${fmtTime(l.scheduled_time)} · ${l.branch_name||''}</div></div><div style="display:flex;gap:4px"><button class="btn btn-sm btn-outline edit-lesson" data-id="${l.id}" title="Update Status"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline qr-lesson" data-id="${l.id}" title="Show QR"><i class="fas fa-qrcode"></i></button>${l.status === 'scheduled' ? `<button class="btn btn-sm cancel-lesson-btn" style="background:var(--danger);color:#fff" data-id="${l.id}" title="Cancel Lesson"><i class="fas fa-times"></i></button>` : ''}</div></div>`).join('') : '<div class="empty-state"><div class="empty-state-title">No upcoming lessons</div></div>';
+}
+function openLesson(id) {
+  const l = lessons.find(x=>x.id===id);
+  if (!l) return;
+  document.getElementById('lesson-id').value = id;
+  document.getElementById('lesson-status').value = l.status || 'scheduled';
+  document.getElementById('lesson-score').value = l.student_score || '';
+  document.getElementById('lesson-notes').value = l.instructor_notes || '';
+  Modal.open('lesson-modal');
+}
+async function saveLesson() {
+  const id = document.getElementById('lesson-id').value;
+  const body = { status: document.getElementById('lesson-status').value, student_score: document.getElementById('lesson-score').value, instructor_notes: document.getElementById('lesson-notes').value };
+  const data = await api(`/api/instructor/lessons/${id}/status`, { body });
+  if (data.success) { Toast.success('Lesson updated.'); Modal.close('lesson-modal'); loadDashboard(); }
+  else Toast.error(data.error);
+}
+async function showQR(id) {
+  const data = await api(`/api/instructor/lessons/${id}/qr`);
+  if (data.success) { document.getElementById('qr-img').src = data.qrCode; document.getElementById('qr-meta').textContent = `${fmtDate(data.date)} at ${fmtTime(data.time)}`; Modal.open('qr-modal'); }
+  else Toast.error(data.error);
+}
+async function cancelLesson(id) {
+  if (!confirm('Cancel this lesson?')) return;
+  const data = await api(`/api/instructor/lessons/${id}/cancel`, { method: 'POST' });
+  if (data.success) { Toast.success('Lesson cancelled.'); loadDashboard(); }
+  else Toast.error(data.error);
+}
+document.addEventListener('click', e => {
+  const edit = e.target.closest('.edit-lesson'); if (edit) openLesson(edit.dataset.id);
+  const qr = e.target.closest('.qr-lesson'); if (qr) showQR(qr.dataset.id);
+  const cancel = e.target.closest('.cancel-lesson-btn'); if (cancel) cancelLesson(cancel.dataset.id);
+});
+document.getElementById('save-lesson-btn').addEventListener('click', saveLesson);
+document.getElementById('availability-btn').addEventListener('click', async () => {
+  const data = await api('/api/instructor/availability', { body: { is_available: !instructor?.is_available } });
+  if (data.success) { Toast.success('Availability updated.'); loadDashboard(); }
+});
+loadDashboard();
+</script>
+</body>
+</html>

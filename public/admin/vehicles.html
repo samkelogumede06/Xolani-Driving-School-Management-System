@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vehicles — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div><a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item active"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Fleet Vehicles</div><div class="pg-sub">Manage all training vehicles</div></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" data-open="vehicle-modal"><i class="fas fa-plus"></i> Add Vehicle</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span><div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+  <div class="page-content">
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-car" style="color:var(--info)"></i></div><div><div class="stat-val" id="v-total">—</div><div class="stat-lbl">Total Vehicles</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-check" style="color:var(--success)"></i></div><div><div class="stat-val" id="v-active">—</div><div class="stat-lbl">Active</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-cog" style="color:var(--accent)"></i></div><div><div class="stat-val" id="v-manual">—</div><div class="stat-lbl">Manual</div></div></div>
+      <div class="stat-card"><div class="stat-ico purple"><i class="fas fa-car-side" style="color:#9333ea"></i></div><div><div class="stat-val" id="v-auto">—</div><div class="stat-lbl">Automatic</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-car-side" style="color:var(--accent)"></i> Vehicle Fleet</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Vehicle</th><th>Registration</th><th>Transmission</th><th>Branch</th><th>Roadworthy</th><th>Service Due</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="vehicles-tbody"><tr><td colspan="8" style="text-align:center;padding:32px"><span class="spinner spinner-dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADD/EDIT VEHICLE MODAL -->
+<div class="modal-overlay" id="vehicle-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="vehicle-modal-title">🚗 Add New Vehicle</div><button class="modal-close" data-close="vehicle-modal">✕</button></div>
+    <div class="modal-body">
+      <form id="vehicle-form">
+        <input type="hidden" id="vehicle-edit-id" name="id">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Make <span class="req">*</span></label><input type="text" name="make" id="v-make" class="form-control" placeholder="Toyota" required></div>
+          <div class="form-group"><label class="form-label">Model <span class="req">*</span></label><input type="text" name="model" id="v-model" class="form-control" placeholder="Corolla" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Year</label><input type="number" name="year" id="v-year" class="form-control" placeholder="2022" min="2000" max="2030"></div>
+          <div class="form-group"><label class="form-label">Color</label><input type="text" name="color" id="v-color" class="form-control" placeholder="White"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Registration <span class="req">*</span></label><input type="text" name="registration_number" id="v-registration" class="form-control" placeholder="HHH 123 GP" required></div>
+          <div class="form-group"><label class="form-label">Transmission <span class="req">*</span></label><select name="transmission" id="v-transmission" class="form-control" required><option value="manual">Manual</option><option value="automatic">Automatic</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Roadworthy Expiry</label><input type="date" name="roadworthy_expiry" id="v-roadworthy" class="form-control"></div>
+          <div class="form-group"><label class="form-label">Service Due</label><input type="date" name="service_due_date" id="v-service" class="form-control"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Branch <span class="req">*</span></label><select name="branch_id" id="v-branch-select" class="form-control" required><option value="">— Select Branch —</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="vehicle-modal">Cancel</button>
+      <button class="btn btn-primary" id="vehicle-save-btn"><i class="fas fa-save"></i> Save Vehicle</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allVehicles = [];
+
+async function loadVehicles() {
+  try {
+    const data = await api('/api/admin/vehicles');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; 
+    if (u && u.firstName && u.lastName) {
+      const init = u.firstName[0]+u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+      ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    }
+    allVehicles = data.vehicles || [];
+    document.getElementById('v-total').textContent = allVehicles.length;
+    document.getElementById('v-active').textContent = allVehicles.filter(v=>v.is_active).length;
+    document.getElementById('v-manual').textContent = allVehicles.filter(v=>v.transmission==='manual').length;
+    document.getElementById('v-auto').textContent = allVehicles.filter(v=>v.transmission==='automatic').length;
+    renderVehicles(allVehicles);
+
+    // Populate branch dropdown
+    const bs = document.getElementById('v-branch-select');
+    if (bs.options.length <= 1) {
+      (data.branches||[]).forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name;bs.appendChild(o);});
+    }
+  } catch(err) { console.error(err); }
+}
+
+function renderVehicles(vehicles) {
+  const tbody = document.getElementById('vehicles-tbody');
+  if (vehicles.length) {
+    const today = new Date();
+    tbody.innerHTML = vehicles.map(v => {
+      const rwDate = v.roadworthy_expiry ? new Date(v.roadworthy_expiry) : null;
+      const rwWarn = rwDate && (rwDate - today) < 30*24*60*60*1000;
+      return `<tr data-id="${v.id}">
+        <td><div style="font-weight:600">${v.make} ${v.model}</div><div style="font-size:.74rem;color:var(--gray-400)">${v.year||'—'} · ${v.color||'—'}</div></td>
+        <td style="font-weight:600;color:var(--primary)">${v.registration_number}</td>
+        <td><span class="badge ${v.transmission==='manual'?'badge-info':'badge-success'}">${v.transmission}</span></td>
+        <td style="font-size:.84rem">${v.branch_name||'—'}</td>
+        <td style="${rwWarn?'color:var(--danger);font-weight:600':''}"><div>${fmtDate(v.roadworthy_expiry)||'—'}</div>${rwWarn?'<div style="font-size:.7rem">⚠️ Expiring soon</div>':''}</td>
+        <td>${fmtDate(v.service_due_date)||'—'}</td>
+        <td><span class="badge ${v.is_active?'badge-success':'badge-danger'}">${v.is_active?'Active':'Inactive'}</span></td>
+        <td>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm edit-vehicle-btn" style="background:var(--primary);color:#fff" data-id="${v.id}" title="Edit Vehicle"><i class="fas fa-pencil-alt"></i></button>
+            <button class="btn btn-sm toggle-vehicle-btn" style="background:${v.is_active?'var(--danger)':'var(--success)'};color:#fff" data-id="${v.id}" data-active="${v.is_active}">${v.is_active?'Deactivate':'Activate'}</button>
+            <button class="btn btn-sm delete-vehicle-btn" style="background:var(--danger);color:#fff" data-id="${v.id}" data-name="${v.make} ${v.model} (${v.registration_number})" title="Delete Permanently"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  } else {
+    tbody.innerHTML = '<tr><td colspan="8" class="table-empty"><div class="empty-state-icon">🚗</div><div class="empty-state-title">No vehicles added</div></td></tr>';
+  }
+}
+
+// ─── Open Edit Modal ────────────────────────────────────────
+function editVehicle(id) {
+  const vehicle = allVehicles.find(v => v.id === id);
+  if (!vehicle) { Toast.error('Vehicle not found.'); return; }
+  
+  document.getElementById('vehicle-modal-title').textContent = '✏️ Edit Vehicle';
+  document.getElementById('vehicle-edit-id').value = id;
+  document.getElementById('v-make').value = vehicle.make || '';
+  document.getElementById('v-model').value = vehicle.model || '';
+  document.getElementById('v-year').value = vehicle.year || '';
+  document.getElementById('v-color').value = vehicle.color || '';
+  document.getElementById('v-registration').value = vehicle.registration_number || '';
+  document.getElementById('v-transmission').value = vehicle.transmission || 'manual';
+  document.getElementById('v-roadworthy').value = vehicle.roadworthy_expiry || '';
+  document.getElementById('v-service').value = vehicle.service_due_date || '';
+  document.getElementById('v-branch-select').value = vehicle.branch_id || '';
+  
+  Modal.open('vehicle-modal');
+}
+
+// ─── Add/Update Vehicle ─────────────────────────────────────
+async function saveVehicle() {
+  const editId = document.getElementById('vehicle-edit-id').value;
+  const form = document.getElementById('vehicle-form');
+  const fd = new FormData(form);
+  const body = Object.fromEntries(fd);
+  
+  if (!body.make || !body.model || !body.registration_number || !body.branch_id) {
+    Toast.warning('Fill in all required fields.');
+    return;
+  }
+  
+  const url = editId ? `/api/admin/vehicles/${editId}` : '/api/admin/vehicles';
+  const method = editId ? 'PUT' : 'POST';
+  
+  const data = await api(url, { method, body });
+  if (data.success) {
+    Toast.success(editId ? 'Vehicle updated!' : 'Vehicle added!');
+    Modal.close('vehicle-modal');
+    document.getElementById('vehicle-edit-id').value = '';
+    document.getElementById('vehicle-modal-title').textContent = '🚗 Add New Vehicle';
+    form.reset();
+    loadVehicles();
+  } else {
+    Toast.error(data.error);
+  }
+}
+
+// ─── Toggle Vehicle ─────────────────────────────────────────
+async function toggleVehicle(id, active) {
+  if (!confirm(`${active ? 'Deactivate' : 'Activate'} this vehicle?`)) return;
+  const data = await api(`/api/admin/vehicles/${id}/toggle`, { method: 'POST' });
+  if (data.success) { Toast.success('Updated.'); loadVehicles(); }
+  else Toast.error(data.error);
+}
+
+// ─── Delete Vehicle ─────────────────────────────────────────
+async function deleteVehicle(id, name) {
+  if (!confirm(`⚠️ Permanently delete vehicle "${name}"?\n\nThis CANNOT be undone!`)) return;
+  
+  const btn = document.querySelector(`.delete-vehicle-btn[data-id="${id}"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>'; }
+  
+  const data = await api(`/api/admin/vehicles/${id}`, { method: 'DELETE' });
+  if (data.success) {
+    Toast.success(`Vehicle "${name}" permanently deleted.`);
+    loadVehicles();
+  } else {
+    Toast.error(data.error || 'Failed to delete vehicle.');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash"></i>'; }
+  }
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Load vehicles
+  loadVehicles();
+
+  // ─── Save Vehicle button (Add/Edit) ─────────────────────
+  document.getElementById('vehicle-save-btn')?.addEventListener('click', saveVehicle);
+
+  // ─── Reset modal on open (for Add) ──────────────────────
+  document.querySelector('[data-open="vehicle-modal"]')?.addEventListener('click', function() {
+    document.getElementById('vehicle-modal-title').textContent = '🚗 Add New Vehicle';
+    document.getElementById('vehicle-edit-id').value = '';
+    document.getElementById('vehicle-form').reset();
+  });
+
+  // ─── Edit buttons (delegated) ────────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.edit-vehicle-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      editVehicle(id);
+    }
+  });
+
+  // ─── Toggle buttons (delegated) ──────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.toggle-vehicle-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const active = btn.dataset.active === 'true';
+      toggleVehicle(id, active);
+    }
+  });
+
+  // ─── Delete buttons (delegated) ──────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.delete-vehicle-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const name = btn.dataset.name;
+      deleteVehicle(id, name);
+    }
+  });
+
+  console.log('✅ Vehicles page initialized!');
+});
+</script>
+</body>
+</html>

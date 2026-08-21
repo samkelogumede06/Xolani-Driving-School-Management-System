@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Inquiries — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div><a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item active"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+    <div><div class="pg-title">Contact Inquiries</div><div class="pg-sub">Manage messages from the public contact form</div></div></div>
+    <div class="topbar-right">
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span>
+        <div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-envelope" style="color:var(--info)"></i></div><div><div class="stat-val" id="inq-total">—</div><div class="stat-lbl">Total</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-envelope-open" style="color:var(--accent)"></i></div><div><div class="stat-val" id="inq-new">—</div><div class="stat-lbl">New / Unread</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-check-circle" style="color:var(--success)"></i></div><div><div class="stat-val" id="inq-responded">—</div><div class="stat-lbl">Responded</div></div></div>
+      <div class="stat-card"><div class="stat-ico red"><i class="fas fa-archive" style="color:var(--danger)"></i></div><div><div class="stat-val" id="inq-closed">—</div><div class="stat-lbl">Closed</div></div></div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="inq-search" class="form-control" placeholder="Search name, email…" style="min-width:220px"></div>
+      <select id="inq-status" class="form-control" style="width:auto">
+        <option value="">All Statuses</option>
+        <option value="new">New</option>
+        <option value="read">Read</option>
+        <option value="responded">Responded</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+
+    <div id="inquiries-list" style="display:grid;gap:14px">
+      <div style="text-align:center;padding:36px;color:var(--gray-400)"><span class="spinner spinner-dark"></span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- VIEW INQUIRY MODAL -->
+<div class="modal-overlay" id="inq-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="inq-modal-title">Inquiry Details</div><button class="modal-close" data-close="inq-modal">✕</button></div>
+    <div class="modal-body" id="inq-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="inq-modal">Close</button>
+      <button class="btn btn-success btn-sm" id="inq-respond-btn"><i class="fas fa-reply"></i> Mark as Responded</button>
+      <button class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-600)" id="inq-close-btn"><i class="fas fa-archive"></i> Close Inquiry</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+// ─── Helper: fmtDate (fallback if not available) ────
+function fmtDate(s) {
+  if (!s) return '—';
+  try {
+    return new Date(s).toLocaleDateString('en-ZA', {day:'2-digit',month:'short',year:'numeric'});
+  } catch(e) {
+    return '—';
+  }
+}
+
+let allInquiries = [];
+let currentInquiryId = null;
+
+async function loadInquiries() {
+  try {
+    const data = await api('/api/admin/inquiries');
+    if (!data.success) { 
+      Toast.error('Failed to load inquiries');
+      return;
+    }
+    
+    // ⭐ FIX: Check if user exists before using it
+    const u = data.user;
+    if (u && u.firstName && u.lastName) {
+      const init = u.firstName[0] + u.lastName[0];
+      const avatarEls = ['sb-avatar', 'tb-avatar'];
+      avatarEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = init;
+      });
+      
+      const nameEls = ['sb-name', 'tb-name'];
+      nameEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = u.firstName + ' ' + u.lastName;
+      });
+    }
+
+    allInquiries = data.inquiries || [];
+    document.getElementById('inq-total').textContent = allInquiries.length;
+    document.getElementById('inq-new').textContent = allInquiries.filter(i=>i.status==='new').length;
+    document.getElementById('inq-responded').textContent = allInquiries.filter(i=>i.status==='responded').length;
+    document.getElementById('inq-closed').textContent = allInquiries.filter(i=>i.status==='closed').length;
+    filterInquiries();
+  } catch(err) { 
+    console.error('Load inquiries error:', err);
+    Toast.error('Error loading inquiries');
+  }
+}
+
+function renderInquiries(items) {
+  const list = document.getElementById('inquiries-list');
+  if (!items || !items.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:56px"><div class="empty-state-icon">📭</div><div class="empty-state-title">No inquiries found</div></div>';
+    return;
+  }
+  const sColors = {new:'badge-danger',read:'badge-warning',responded:'badge-success',closed:'badge-gray'};
+  list.innerHTML = items.map(i => `
+    <div class="card" data-id="${i.id}" style="${i.status==='new'?'border-left:3px solid var(--accent);':''}">
+      <div class="card-body" style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:${i.status==='new'?'rgba(245,166,35,.15)':'var(--gray-100)'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">
+          ${i.status==='new'?'📬':'📭'}
+        </div>
+        <div style="flex:1;min-width:0;cursor:pointer" class="inquiry-click" data-id="${i.id}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+            <div style="font-weight:700;color:var(--primary)">${i.name}</div>
+            <span class="badge ${sColors[i.status]||'badge-gray'}">${i.status}</span>
+            ${i.branch_name ? `<span class="badge badge-primary" style="font-size:.66rem">${i.branch_name}</span>` : ''}
+          </div>
+          <div style="font-size:.78rem;color:var(--gray-400);margin-bottom:6px">${i.email}${i.phone?' · '+i.phone:''} · ${fmtDate(i.created_at)}</div>
+          ${i.subject ? `<div style="font-size:.82rem;font-weight:600;color:var(--gray-700);margin-bottom:4px">${i.subject}</div>` : ''}
+          <div style="font-size:.82rem;color:var(--gray-500);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i.message}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn btn-sm btn-dark read-btn" data-id="${i.id}" title="Mark as read"><i class="fas fa-eye"></i></button>
+          <a href="mailto:${i.email}?subject=Re: ${encodeURIComponent(i.subject||'Your Inquiry')}" class="btn btn-sm btn-success"><i class="fas fa-reply"></i></a>
+          <button class="btn btn-sm delete-btn" style="background:var(--danger);color:#fff" data-id="${i.id}" title="Delete inquiry"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function filterInquiries() {
+  const q = document.getElementById('inq-search')?.value?.toLowerCase() || '';
+  const status = document.getElementById('inq-status')?.value || '';
+  const filtered = allInquiries.filter(i => {
+    const searchable = [i.name, i.email, i.phone, i.subject, i.message, i.branch_name, i.status].filter(Boolean).join(' ').toLowerCase();
+    const matchQ = !q || searchable.includes(q);
+    const matchS = !status || i.status === status;
+    return matchQ && matchS;
+  });
+  renderInquiries(filtered);
+}
+
+function viewInquiry(id) {
+  const i = allInquiries.find(x=>x.id===id);
+  if (!i) return;
+  currentInquiryId = id;
+  document.getElementById('inq-modal-title').textContent = `📬 ${i.name}`;
+  document.getElementById('inq-modal-body').innerHTML = `
+    <div style="display:grid;gap:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--gray-50);border-radius:var(--r-sm);padding:16px">
+        <div><div style="font-size:.7rem;color:var(--gray-400);margin-bottom:2px">FROM</div><div style="font-weight:700">${i.name}</div></div>
+        <div><div style="font-size:.7rem;color:var(--gray-400);margin-bottom:2px">DATE</div><div>${fmtDate(i.created_at)}</div></div>
+        <div><div style="font-size:.7rem;color:var(--gray-400);margin-bottom:2px">EMAIL</div><a href="mailto:${i.email}" style="color:var(--primary);font-weight:600">${i.email}</a></div>
+        <div><div style="font-size:.7rem;color:var(--gray-400);margin-bottom:2px">PHONE</div><div>${i.phone||'—'}</div></div>
+        ${i.subject?`<div style="grid-column:1/-1"><div style="font-size:.7rem;color:var(--gray-400);margin-bottom:2px">SUBJECT</div><div style="font-weight:600">${i.subject}</div></div>`:''}
+        ${i.branch_name?`<div><div style="font-size:.7rem;color:var(--gray-400);margin-bottom:2px">BRANCH</div><div>${i.branch_name}</div></div>`:''}
+      </div>
+      <div>
+        <div style="font-size:.7rem;color:var(--gray-400);margin-bottom:8px;text-transform:uppercase;font-weight:700">Message</div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:var(--r-sm);padding:16px;font-size:.9rem;line-height:1.7;color:var(--gray-700)">${i.message}</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="mailto:${i.email}?subject=Re: ${encodeURIComponent(i.subject||'Your Inquiry - Xolani Driving School')}" class="btn btn-success btn-sm"><i class="fas fa-reply"></i> Reply via Email</a>
+        ${i.phone?`<a href="tel:${i.phone}" class="btn btn-dark btn-sm"><i class="fas fa-phone"></i> Call Now</a>`:''}
+        ${i.phone?`<a href="https://wa.me/${i.phone.replace(/\D/g,'')}" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff"><i class="fab fa-whatsapp"></i> WhatsApp</a>`:''}
+      </div>
+    </div>`;
+
+  Modal.open('inq-modal');
+
+  if (i.status === 'new') updateStatus(id, 'read', false);
+}
+
+async function updateStatus(id, status, showToast = true) {
+  try {
+    const data = await api(`/api/admin/inquiries/${id}/status`, { method: 'POST', body: { status } });
+    if (data.success) {
+      const inq = allInquiries.find(i=>i.id===id);
+      if (inq) inq.status = status;
+      if (showToast) { Toast.success(`Marked as ${status}.`); Modal.close('inq-modal'); }
+      await loadInquiries();
+    } else if (showToast) Toast.error(data.error);
+  } catch(err) {
+    Toast.error('Error updating status');
+  }
+}
+
+async function markAsRead(id) {
+  const inq = allInquiries.find(i=>i.id===id);
+  if (inq && ['responded', 'closed'].includes(inq.status)) {
+    Toast.info('Inquiry is already handled.');
+    return;
+  }
+  await updateStatus(id, 'read');
+}
+
+async function deleteInquiry(id) {
+  if (!confirm('Delete this inquiry permanently?')) return;
+  try {
+    const data = await api(`/api/admin/inquiries/${id}`, { method:'DELETE' });
+    if (data.success) {
+      Toast.success('Inquiry deleted.');
+      if (currentInquiryId === id) Modal.close('inq-modal');
+      await loadInquiries();
+    } else {
+      Toast.error(data.error || 'Could not delete inquiry.');
+    }
+  } catch(err) {
+    Toast.error('Error deleting inquiry');
+  }
+}
+
+// ============================================================
+// EVENT LISTENERS - DOMContentLoaded
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Load inquiries
+  loadInquiries();
+
+  // ─── View inquiry (click on card) ──────────────────
+  document.addEventListener('click', function(e) {
+    const card = e.target.closest('.inquiry-click');
+    if (card) {
+      const id = card.dataset.id;
+      viewInquiry(id);
+    }
+  });
+
+  // ─── Mark as Read buttons ──────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.read-btn');
+    if (btn) {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      markAsRead(id);
+    }
+  });
+
+  // ─── Delete buttons ────────────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.delete-btn');
+    if (btn) {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      deleteInquiry(id);
+    }
+  });
+
+  // ─── Search input ──────────────────────────────────
+  const searchInput = document.getElementById('inq-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', filterInquiries);
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        filterInquiries();
+      }
+    });
+  }
+
+  // ─── Filter dropdown ───────────────────────────────
+  const filterSelect = document.getElementById('inq-status');
+  if (filterSelect) {
+    filterSelect.addEventListener('change', filterInquiries);
+  }
+
+  // ─── "Mark as Responded" button in modal ────────────
+  const respondBtn = document.getElementById('inq-respond-btn');
+  if (respondBtn) {
+    respondBtn.addEventListener('click', function() {
+      if (currentInquiryId) {
+        updateStatus(currentInquiryId, 'responded');
+      }
+    });
+  }
+
+  // ─── "Close Inquiry" button in modal ────────────────
+  const closeBtn = document.getElementById('inq-close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      if (currentInquiryId) {
+        updateStatus(currentInquiryId, 'closed');
+      }
+    });
+  }
+
+  console.log('✅ Inquiry page initialized!');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Instructors — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div><a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item active"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+    <div><div class="pg-title">Instructors</div><div class="pg-sub">Manage all driving instructors</div></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" data-open="instructor-modal"><i class="fas fa-user-plus"></i> Add Instructor</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span>
+        <div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <!-- STATS -->
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-chalkboard-teacher" style="color:var(--info)"></i></div><div><div class="stat-val" id="i-total">—</div><div class="stat-lbl">Total Instructors</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-check-circle" style="color:var(--success)"></i></div><div><div class="stat-val" id="i-available">—</div><div class="stat-lbl">Available</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-building" style="color:var(--accent)"></i></div><div><div class="stat-val" id="i-umlazi-v">—</div><div class="stat-lbl">Umlazi V</div></div></div>
+      <div class="stat-card"><div class="stat-ico purple"><i class="fas fa-building" style="color:#9333ea"></i></div><div><div class="stat-val" id="i-umlazi-w">—</div><div class="stat-lbl">Umlazi W</div></div></div>
+    </div>
+
+    <!-- INSTRUCTOR CARDS GRID -->
+    <div id="instructors-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
+      <div style="text-align:center;padding:48px;color:var(--gray-400);grid-column:1/-1"><span class="spinner spinner-dark"></span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADD INSTRUCTOR MODAL -->
+<div class="modal-overlay" id="instructor-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">👨‍🏫 Add New Instructor</div><button class="modal-close" data-close="instructor-modal">✕</button></div>
+    <div class="modal-body">
+      <form id="instructor-form">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">First Name <span class="req">*</span></label><input type="text" name="first_name" class="form-control" required></div>
+          <div class="form-group"><label class="form-label">Last Name <span class="req">*</span></label><input type="text" name="last_name" class="form-control" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Email <span class="req">*</span></label><input type="email" name="email" class="form-control" required></div>
+          <div class="form-group"><label class="form-label">Phone <span class="req">*</span></label><input type="tel" name="phone" class="form-control" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Branch <span class="req">*</span></label><select name="branch_id" class="form-control" required id="i-branch"><option value="">— Select Branch —</option></select></div>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:var(--gray-50);border-radius:var(--r-sm);font-size:.8rem;color:var(--gray-500)">
+          A temporary password will be generated automatically. The instructor must change it on first login.
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">License Number</label><input type="text" name="license_number" class="form-control" placeholder="PDP/Instructor license"></div>
+          <div class="form-group"><label class="form-label">License Expiry</label><input type="date" name="license_expiry" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Years Experience</label><input type="number" name="years_experience" class="form-control" min="0" placeholder="e.g. 5"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Bio / Notes</label><textarea name="bio" class="form-control" rows="3" placeholder="Brief instructor bio…"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="instructor-modal">Cancel</button>
+      <button class="btn btn-primary" id="instructor-save-btn"><i class="fas fa-user-plus"></i> Add Instructor</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allInstructors = [];
+
+async function loadInstructors() {
+  try {
+    const data = await api('/api/admin/instructors');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; 
+    if (u && u.firstName && u.lastName) {
+      const init = u.firstName[0]+u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+      ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    }
+
+    allInstructors = data.instructors || [];
+    document.getElementById('i-total').textContent = allInstructors.length;
+    document.getElementById('i-available').textContent = allInstructors.filter(i=>i.is_available).length;
+    document.getElementById('i-umlazi-v').textContent = allInstructors.filter(i=>(i.branch_name||'').toLowerCase().includes('umlazi v')).length;
+    document.getElementById('i-umlazi-w').textContent = allInstructors.filter(i=>(i.branch_name||'').toLowerCase().includes('umlazi w')).length;
+
+    renderInstructors(allInstructors);
+
+    // Populate branch dropdown
+    const bs = document.getElementById('i-branch');
+    if (bs.options.length <= 1) {
+      (data.branches||[]).forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name;bs.appendChild(o);});
+    }
+  } catch(err) { console.error(err); }
+}
+
+function renderInstructors(instructors) {
+  const grid = document.getElementById('instructors-grid');
+  if (instructors.length) {
+    grid.innerHTML = instructors.map(i => `
+      <div class="card" data-id="${i.id}" data-profile-id="${i.profile_id}" style="transition:transform .2s">
+        <div style="height:8px;background:${i.is_available?'var(--success)':'var(--gray-200)'}"></div>
+        <div class="card-body" style="text-align:center;padding:24px">
+          <div style="width:72px;height:72px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;margin:0 auto 14px;font-family:var(--ff-head)">
+            ${i.first_name ? i.first_name[0]+i.last_name[0] : 'IN'}
+          </div>
+          <div style="font-weight:700;font-size:1rem;color:var(--primary);margin-bottom:4px">${i.first_name} ${i.last_name}</div>
+          <div style="font-size:.78rem;color:var(--accent);font-weight:600;margin-bottom:12px">${i.branch_name||'—'}</div>
+          <div style="display:flex;justify-content:center;gap:8px;margin-bottom:14px">
+            <span class="badge ${i.is_available?'badge-success':'badge-danger'}">${i.is_available?'Available':'Unavailable'}</span>
+          </div>
+          <div style="display:grid;gap:6px;text-align:left;font-size:.82rem;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--gray-400)">Phone</span><span>${i.phone||'—'}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--gray-400)">Experience</span><span>${i.years_experience||0} years</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--gray-400)">License</span><span style="font-size:.76rem">${i.license_number||'—'}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--gray-400)">Lic. Expiry</span><span style="${i.license_expiry&&new Date(i.license_expiry)<new Date()?'color:var(--danger);font-weight:700':''}">${fmtDate(i.license_expiry)||'—'}</span></div>
+          </div>
+          ${i.bio ? `<div style="font-size:.78rem;color:var(--gray-500);font-style:italic;margin-bottom:12px;border-top:1px solid var(--gray-100);padding-top:10px">"${i.bio}"</div>` : ''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-block toggle-instructor-btn" style="flex:1;background:${i.is_available?'var(--danger)':'var(--success)'};color:#fff" data-id="${i.id}" data-available="${i.is_available}">
+              <i class="fas fa-${i.is_available?'ban':'check'}"></i> ${i.is_available?'Mark Unavailable':'Mark Available'}
+            </button>
+            <button class="btn btn-sm delete-instructor-btn" style="flex:0.5;background:var(--danger);color:#fff" data-id="${i.id}" data-profile-id="${i.profile_id}" data-name="${i.first_name} ${i.last_name}" title="Delete Permanently">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>`).join('');
+  } else {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:56px"><div class="empty-state-icon">👨‍🏫</div><div class="empty-state-title">No instructors added yet</div><div class="empty-state-desc">Click "Add Instructor" to get started.</div></div>';
+  }
+}
+
+// ─── Add Instructor ────────────────────────────────────────
+async function addInstructor() {
+  const form = document.getElementById('instructor-form');
+  const fd = new FormData(form);
+  const body = Object.fromEntries(fd);
+  if (!body.first_name||!body.last_name||!body.email||!body.phone||!body.branch_id) { Toast.warning('Fill all required fields.'); return; }
+  const data = await api('/api/admin/instructors', { body });
+  if (data.success) {
+    Toast.success(`Instructor added. Temporary password: ${data.temporaryPassword}`);
+    Modal.close('instructor-modal');
+    alert(`Instructor temporary password:\n\n${data.temporaryPassword}\n\nGive this to the instructor securely. They will be forced to change it on first login.`);
+    form.reset();
+    loadInstructors();
+  }
+  else Toast.error(data.error || 'Failed to add instructor.');
+}
+
+// ─── Toggle Instructor ──────────────────────────────────────
+async function toggleInstructor(id, available) {
+  const data = await api(`/api/admin/instructors/${id}/toggle`, { method:'POST' });
+  if (data.success) { Toast.success('Availability updated.'); loadInstructors(); }
+  else Toast.error(data.error);
+}
+
+// ─── Delete Instructor ──────────────────────────────────────
+async function deleteInstructor(id, profileId, name) {
+  if (!confirm(`⚠️ Permanently delete instructor "${name}"?\n\nThis will DELETE:\n- Their profile\n- Their account\n- All their assigned lessons\n\nThis CANNOT be undone!`)) return;
+  
+  const btn = document.querySelector(`.delete-instructor-btn[data-id="${id}"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>'; }
+  
+  const data = await api(`/api/admin/instructors/${id}`, { method:'DELETE' });
+  if (data.success) {
+    Toast.success(`Instructor "${name}" has been permanently deleted.`);
+    loadInstructors();
+  } else {
+    Toast.error(data.error || 'Failed to delete instructor.');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash"></i>'; }
+  }
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Load instructors
+  loadInstructors();
+
+  // ─── Add Instructor button ──────────────────────────────
+  document.getElementById('instructor-save-btn')?.addEventListener('click', addInstructor);
+
+  // ─── Toggle buttons (delegated) ────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.toggle-instructor-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const available = btn.dataset.available === 'true';
+      toggleInstructor(id, available);
+    }
+  });
+
+  // ─── Delete buttons (delegated) ────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.delete-instructor-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const profileId = btn.dataset.profileId;
+      const name = btn.dataset.name;
+      deleteInstructor(id, profileId, name);
+    }
+  });
+
+  console.log('✅ Instructors page initialized!');
+});
+</script>
+</body>
+</html>

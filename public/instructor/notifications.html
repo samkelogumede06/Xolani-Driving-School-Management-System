@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Notifications — Instructor | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">Instructor Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Work</div>
+    <a href="/instructor/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Lessons</a>
+    <a href="/instructor/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/instructor/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/instructor/notifications.html" class="nav-item active"><span class="ni"><i class="fas fa-bell"></i></span> Notifications</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/instructor/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> Profile</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">IN</div><div><div class="sb-name" id="sb-name">Instructor</div><div class="sb-role">Instructor</div></div><a href="/auth/logout" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Notifications</div><div class="pg-sub">Stay updated with important messages</div></div></div>
+    <div class="topbar-right">
+      <button id="mark-all-read-btn" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-check-double"></i> Mark All Read</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">IN</div><span class="tb-name" id="tb-name">Instructor</span><div class="dropdown-menu" id="user-dd"><a href="/instructor/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a><a href="/auth/logout" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+  <div class="page-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-bell" style="color:var(--accent)"></i> All Notifications</div>
+        <span id="notif-count" class="badge badge-primary">Loading…</span>
+      </div>
+      <div id="notifications-list" style="display:grid;gap:10px;padding:20px">
+        <div style="text-align:center;padding:36px;color:var(--gray-400)"><span class="spinner spinner-dark"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allNotifications = [];
+
+async function loadNotifications() {
+  try {
+    const data = await api('/api/instructor/notifications');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    
+    if (data.user) {
+      const u = data.user;
+      const init = u.firstName[0] + u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = init; });
+      ['sb-name','tb-name'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = u.firstName + ' ' + u.lastName; });
+    }
+
+    allNotifications = data.notifications || [];
+    document.getElementById('notif-count').textContent = allNotifications.length + ' notification(s)';
+    renderNotifications(allNotifications);
+  } catch(err) { console.error(err); }
+}
+
+function renderNotifications(notifications) {
+  const list = document.getElementById('notifications-list');
+  if (!notifications.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:56px"><div class="empty-state-icon">🔔</div><div class="empty-state-title">No notifications</div><div class="empty-state-desc">You\'re all caught up!</div></div>';
+    return;
+  }
+  const typeColors = { info: 'badge-info', success: 'badge-success', warning: 'badge-warning', error: 'badge-danger', lesson: 'badge-info', payment: 'badge-success', system: 'badge-gray' };
+  const typeIcons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌', lesson: '📅', payment: '💰', system: '⚙️' };
+  list.innerHTML = notifications.map(n => `
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:var(--r-sm);border:1px solid ${n.is_read ? 'var(--gray-100)' : 'var(--accent)'};background:${n.is_read ? '#fff' : 'rgba(245,166,35,.04)'}">
+      <span style="font-size:1.2rem">${typeIcons[n.type] || '📌'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <strong style="color:var(--primary);font-size:.9rem">${n.title}</strong>
+          <span class="badge ${typeColors[n.type] || 'badge-gray'}">${n.type}</span>
+          ${!n.is_read ? '<span class="badge badge-danger">New</span>' : ''}
+        </div>
+        <div style="font-size:.85rem;color:var(--gray-600);margin-top:4px">${n.message}</div>
+        <div style="font-size:.72rem;color:var(--gray-400);margin-top:6px">${fmtDate(n.created_at)}</div>
+      </div>
+      ${!n.is_read ? `<button class="btn btn-sm mark-read-btn" data-id="${n.id}" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-check"></i></button>` : ''}
+    </div>
+  `).join('');
+}
+
+async function markAsRead(id) {
+  const data = await api(`/api/notifications/${id}/read`, { method: 'POST' });
+  if (data.success) { Toast.success('Marked as read.'); loadNotifications(); }
+  else Toast.error(data.error);
+}
+
+async function markAllRead() {
+  const unread = allNotifications.filter(n => !n.is_read);
+  if (!unread.length) { Toast.info('All notifications already read.'); return; }
+  const data = await api('/api/notifications/mark-all-read', { method: 'POST' });
+  if (data.success) { Toast.success('All notifications marked as read.'); loadNotifications(); }
+  else Toast.error(data.error);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadNotifications();
+  document.getElementById('mark-all-read-btn')?.addEventListener('click', markAllRead);
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.mark-read-btn');
+    if (btn) { const id = btn.dataset.id; markAsRead(id); }
+  });
+  console.log('✅ Instructor Notifications page initialized!');
+});
+</script>
+</body>
+</html>

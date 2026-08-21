@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Schedule — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div>
+    <a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item active"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Lesson Schedule</div><div class="pg-sub">Schedule, view and manage all lessons</div></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" data-open="schedule-modal"><i class="fas fa-plus"></i> Schedule Lesson</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span><div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <!-- DATE NAV -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button id="date-prev" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-chevron-left"></i></button>
+          <div>
+            <div style="font-family:var(--ff-head);font-size:1.1rem;font-weight:700;color:var(--primary)" id="date-display">Today</div>
+            <div style="font-size:.76rem;color:var(--gray-400)" id="date-sub">Loading…</div>
+          </div>
+          <button id="date-next" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-chevron-right"></i></button>
+          <button id="date-today" class="btn btn-sm btn-dark">Today</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <input type="date" id="date-picker" class="form-control" style="width:auto">
+          <select id="branch-filter" class="form-control" style="width:auto">
+            <option value="">All Branches</option>
+            <option value="umlazi-v">Umlazi V</option>
+            <option value="umlazi-w">Umlazi W</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;font-family:var(--ff-head);color:var(--primary)" id="count-total">—</div><div style="font-size:.72rem;color:var(--gray-400)">Total</div></div>
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;font-family:var(--ff-head);color:var(--success)" id="count-done">—</div><div style="font-size:.72rem;color:var(--gray-400)">Done</div></div>
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;font-family:var(--ff-head);color:var(--info)" id="count-upcoming">—</div><div style="font-size:.72rem;color:var(--gray-400)">Upcoming</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIMELINE VIEW -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-clock" style="color:var(--accent)"></i> Daily Schedule</div>
+        <div style="display:flex;gap:8px">
+          <button id="view-list" class="btn btn-sm btn-dark">List</button>
+          <button id="view-timeline" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)">Timeline</button>
+        </div>
+      </div>
+
+      <!-- LIST VIEW -->
+      <div id="view-list-wrap">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Student</th><th>Instructor</th><th>Vehicle</th><th>Type</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="schedule-tbody"><tr><td colspan="8" style="text-align:center;padding:36px"><span class="spinner spinner-dark"></span></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TIMELINE VIEW -->
+      <div id="view-timeline-wrap" style="display:none;padding:20px">
+        <div id="timeline-slots"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SCHEDULE LESSON MODAL -->
+<div class="modal-overlay" id="schedule-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title"><i class="fas fa-calendar-plus" style="color:var(--accent)"></i> Schedule New Lesson</div><button class="modal-close" data-close="schedule-modal">✕</button></div>
+    <div class="modal-body">
+      <form id="schedule-form">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Student <span class="req">*</span></label><select name="student_id" class="form-control" required id="sched-student"><option value="">— Select Student —</option></select></div>
+          <div class="form-group"><label class="form-label">Lesson Type <span class="req">*</span></label>
+            <select name="lesson_type" class="form-control" required>
+              <option value="practical">Practical</option>
+              <option value="theory">Theory</option>
+              <option value="yard_test">Yard Test</option>
+              <option value="road_test">Road Test</option>
+              <option value="observation">Observation</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date <span class="req">*</span></label><input type="date" name="scheduled_date" class="form-control" required id="sched-date"></div>
+          <div class="form-group"><label class="form-label">Time <span class="req">*</span></label><input type="time" name="scheduled_time" class="form-control" required value="08:00"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Instructor</label><select name="instructor_id" class="form-control" id="sched-instructor"><option value="">— Assign Instructor —</option></select></div>
+          <div class="form-group"><label class="form-label">Vehicle</label><select name="vehicle_id" class="form-control" id="sched-vehicle"><option value="">— Assign Vehicle —</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Branch <span class="req">*</span></label><select name="branch_id" class="form-control" required id="sched-branch"><option value="">— Select Branch —</option></select></div>
+          <div class="form-group"><label class="form-label">Duration (mins)</label><select name="duration_minutes" class="form-control"><option value="30" selected>30 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Location / Notes</label><input type="text" name="location" class="form-control" placeholder="Meeting point or special notes…"></div>
+        <div class="form-group"><label class="form-label">Enrollment</label><select name="enrollment_id" class="form-control" id="sched-enrollment"><option value="">— Link to Enrollment (optional) —</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="schedule-modal">Cancel</button>
+      <button class="btn btn-primary" id="schedule-save-btn"><i class="fas fa-calendar-check"></i> Schedule & Generate QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPDATE STATUS MODAL -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Update Lesson Status</div><button class="modal-close" data-close="status-modal">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="status-lesson-id">
+      <div class="form-group"><label class="form-label">Status</label>
+        <select id="status-select" class="form-control">
+          <option value="scheduled">Scheduled</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="no_show">No Show</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Student Score (%)</label><input type="number" id="status-score" class="form-control" min="0" max="100" placeholder="0–100"></div>
+      <div class="form-group"><label class="form-label">Instructor Notes</label><textarea id="status-notes" class="form-control" rows="3" placeholder="Notes about this lesson…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="status-modal">Cancel</button>
+      <button class="btn btn-primary" id="status-update-btn"><i class="fas fa-save"></i> Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header"><div class="modal-title">📲 Lesson QR Code</div><button class="modal-close" data-close="qr-modal">✕</button></div>
+    <div class="modal-body qr-wrap">
+      <img id="qr-img" src="" class="qr-img" alt="QR Code" style="display:block;margin:0 auto">
+      <div class="qr-info">
+        <div style="font-size:.82rem;color:var(--gray-600);display:flex;justify-content:space-between;margin-bottom:4px"><span>Date:</span><strong id="qr-date">—</strong></div>
+        <div style="font-size:.82rem;color:var(--gray-600);display:flex;justify-content:space-between"><span>Time:</span><strong id="qr-time">—</strong></div>
+      </div>
+      <p style="font-size:.76rem;color:var(--gray-400);text-align:center;margin-top:12px">Student scans this with their phone camera at the start of the lesson to mark attendance.</p>
+      <button id="print-qr-btn" class="btn btn-dark btn-block btn-sm" style="margin-top:10px"><i class="fas fa-print"></i> Print QR Code</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let currentDate = new Date().toISOString().split('T')[0];
+let currentView = 'list';
+let scheduleData = [];
+
+async function loadSchedule() {
+  try {
+    const branch = document.getElementById('branch-filter').value;
+    const url = `/api/admin/schedule?date=${currentDate}${branch ? '&branch='+branch : ''}`;
+    const data = await api(url);
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+
+    if (data.user) {
+      const u = data.user; const init = u.firstName[0]+u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+      ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    }
+
+    scheduleData = data.lessons || [];
+    updateDateDisplay();
+    updateCounts();
+    renderSchedule();
+    populateFormDropdowns(data);
+  } catch(err) { console.error(err); }
+}
+
+function updateDateDisplay() {
+  const d = new Date(currentDate + 'T00:00:00');
+  const isToday = currentDate === new Date().toISOString().split('T')[0];
+  document.getElementById('date-display').textContent = isToday ? 'Today' : d.toLocaleDateString('en-ZA',{weekday:'long'});
+  document.getElementById('date-sub').textContent = d.toLocaleDateString('en-ZA',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('date-picker').value = currentDate;
+  document.getElementById('sched-date').value = currentDate;
+}
+
+function updateCounts() {
+  document.getElementById('count-total').textContent = scheduleData.length;
+  document.getElementById('count-done').textContent = scheduleData.filter(l=>l.status==='completed').length;
+  document.getElementById('count-upcoming').textContent = scheduleData.filter(l=>l.status==='scheduled').length;
+}
+
+function renderSchedule() {
+  if (currentView === 'list') renderList();
+  else renderTimeline();
+}
+
+function renderList() {
+  const tbody = document.getElementById('schedule-tbody');
+  if (!scheduleData.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="table-empty"><div class="empty-state-icon">📅</div><div class="empty-state-title">No lessons scheduled</div><div class="empty-state-desc">Click "Schedule Lesson" to add one.</div></td></tr>';
+    return;
+  }
+  const sColors = {scheduled:'badge-info',completed:'badge-success',cancelled:'badge-danger',no_show:'badge-warning',in_progress:'badge-warning'};
+  const tColors = {practical:'badge-info',theory:'badge-primary',yard_test:'badge-warning',road_test:'badge-success'};
+  tbody.innerHTML = scheduleData.map(l => `
+    <tr data-id="${l.id}">
+      <td><div style="font-weight:700;color:var(--primary)">${fmtTime(l.scheduled_time)}</div><div style="font-size:.72rem;color:var(--gray-400)">${l.duration_minutes||60} min</div></td>
+      <td>
+        <div style="font-weight:600;font-size:.86rem">${l.student_name||'—'}</div>
+        <div style="font-size:.72rem;color:var(--gray-400)">${l.student_phone||''}</div>
+      </td>
+      <td style="font-size:.84rem">${l.instructor_name||'—'}</td>
+      <td style="font-size:.82rem">${l.vehicle||'—'}</td>
+      <td><span class="badge ${tColors[l.lesson_type]||'badge-gray'}">${(l.lesson_type||'').replace('_',' ')}</span></td>
+      <td style="font-size:.82rem">${l.branch_name||'—'}</td>
+      <td><span class="badge ${sColors[l.status]||'badge-gray'}">${l.status||'—'}</span></td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-sm status-btn" style="background:var(--primary);color:#fff" data-id="${l.id}" data-status="${l.status||'scheduled'}" title="Update Status"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm qr-btn" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)" data-id="${l.id}" title="Show QR"><i class="fas fa-qrcode"></i></button>
+          <button class="btn btn-sm cancel-btn" style="background:var(--danger);color:#fff" data-id="${l.id}" title="Cancel"><i class="fas fa-times"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderTimeline() {
+  const slots = document.getElementById('timeline-slots');
+  const hours = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+  slots.innerHTML = hours.map(h => {
+    const hLessons = scheduleData.filter(l => l.scheduled_time && l.scheduled_time.startsWith(h.split(':')[0].padStart(2,'0')));
+    return `
+      <div style="display:flex;gap:12px;margin-bottom:8px;align-items:flex-start">
+        <div style="width:52px;text-align:right;font-size:.78rem;font-weight:600;color:var(--gray-400);padding-top:8px;flex-shrink:0">${h}</div>
+        <div style="flex:1;min-height:44px;border-left:2px solid var(--gray-100);padding-left:12px">
+          ${hLessons.length ? hLessons.map(l => `
+            <div style="background:${l.status==='completed'?'rgba(22,163,74,.1)':l.status==='cancelled'?'rgba(220,38,38,.1)':'rgba(15,42,74,.07)'};border-left:3px solid ${l.status==='completed'?'var(--success)':l.status==='cancelled'?'var(--danger)':'var(--primary)'};border-radius:0 var(--r-sm) var(--r-sm) 0;padding:8px 12px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-weight:600;font-size:.84rem">${l.student_name||'—'}</div><div style="font-size:.72rem;color:var(--gray-500)">${fmtTime(l.scheduled_time)} · ${l.instructor_name||'TBA'} · ${(l.lesson_type||'').replace('_',' ')}</div></div>
+              <div style="display:flex;gap:4px">
+                <button class="btn btn-sm status-btn" style="background:var(--primary);color:#fff;padding:4px 8px" data-id="${l.id}" data-status="${l.status||'scheduled'}"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm qr-btn" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary);padding:4px 8px" data-id="${l.id}"><i class="fas fa-qrcode"></i></button>
+              </div>
+            </div>`).join('') : '<div style="height:36px;border-radius:var(--r-sm);border:1px dashed var(--gray-200);"></div>'}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function populateFormDropdowns(data) {
+  const ss = document.getElementById('sched-student');
+  if (ss.options.length <= 1) {
+    (data.students||[]).forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.first_name+' '+s.last_name;ss.appendChild(o);});
+  }
+  const ii = document.getElementById('sched-instructor');
+  if (ii.options.length <= 1) {
+    (data.instructors||[]).forEach(i=>{const o=document.createElement('option');o.value=i.id;o.textContent=i.name;ii.appendChild(o);});
+  }
+  const vv = document.getElementById('sched-vehicle');
+  if (vv.options.length <= 1) {
+    (data.vehicles||[]).forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=`${v.make} ${v.model} (${v.registration_number})`;vv.appendChild(o);});
+  }
+  const bb = document.getElementById('sched-branch');
+  if (bb.options.length <= 1) {
+    (data.branches||[]).forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name;bb.appendChild(o);});
+  }
+}
+
+// ─── Date navigation ────────────────────────────────────────
+function changeDate(days) { const d = new Date(currentDate); d.setDate(d.getDate()+days); currentDate = d.toISOString().split('T')[0]; loadSchedule(); }
+function goToday() { currentDate = new Date().toISOString().split('T')[0]; loadSchedule(); }
+function setDate(v) { currentDate = v; loadSchedule(); }
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-list-wrap').style.display = v==='list' ? '' : 'none';
+  document.getElementById('view-timeline-wrap').style.display = v==='timeline' ? '' : 'none';
+  document.getElementById('view-list').className = v==='list' ? 'btn btn-sm btn-dark' : 'btn btn-sm';
+  document.getElementById('view-list').style = v==='list' ? '' : 'background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)';
+  document.getElementById('view-timeline').className = v==='timeline' ? 'btn btn-sm btn-dark' : 'btn btn-sm';
+  document.getElementById('view-timeline').style = v==='timeline' ? '' : 'background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)';
+  renderSchedule();
+}
+
+// ─── ⭐ FIXED Schedule Lesson ──────────────────────────────
+async function scheduleLesson() {
+  const form = document.getElementById('schedule-form');
+  const fd = new FormData(form);
+  const body = Object.fromEntries(fd);
+  if (!body.student_id || !body.scheduled_date || !body.scheduled_time || !body.branch_id) {
+    Toast.warning('Please fill in all required fields.'); return;
+  }
+  const data = await api('/api/admin/schedule', { body });
+  if (data.success) {
+    Toast.success('Lesson scheduled!');
+    Modal.close('schedule-modal');
+    form.reset();
+    
+    // ⭐ FIX: Set currentDate to the scheduled date and reload
+    currentDate = body.scheduled_date;
+    document.getElementById('sched-date').value = currentDate;
+    
+    if (data.qrCode) {
+      document.getElementById('qr-img').src = data.qrCode;
+      document.getElementById('qr-date').textContent = body.scheduled_date;
+      document.getElementById('qr-time').textContent = body.scheduled_time;
+      Modal.open('qr-modal');
+    }
+    loadSchedule();
+  } else Toast.error(data.error || 'Failed to schedule lesson.');
+}
+
+// ─── Open Status Modal ─────────────────────────────────────
+function openStatusModal(id, status) {
+  document.getElementById('status-lesson-id').value = id;
+  document.getElementById('status-select').value = status;
+  document.getElementById('status-score').value = '';
+  document.getElementById('status-notes').value = '';
+  Modal.open('status-modal');
+}
+
+// ─── Update Status ──────────────────────────────────────────
+async function updateStatus() {
+  const id = document.getElementById('status-lesson-id').value;
+  const body = {
+    status: document.getElementById('status-select').value,
+    student_score: document.getElementById('status-score').value,
+    instructor_notes: document.getElementById('status-notes').value
+  };
+  const data = await api(`/api/admin/schedule/${id}/status`, { body });
+  if (data.success) { Toast.success('Status updated.'); Modal.close('status-modal'); loadSchedule(); }
+  else Toast.error(data.error);
+}
+
+// ─── Cancel Lesson ──────────────────────────────────────────
+async function cancelLesson(id) {
+  if (!confirm('Cancel this lesson?')) return;
+  const data = await api(`/api/admin/schedule/${id}/status`, { body: { status:'cancelled' } });
+  if (data.success) { Toast.success('Lesson cancelled.'); loadSchedule(); }
+  else Toast.error(data.error);
+}
+
+// ─── Print QR ──────────────────────────────────────────────
+function printQR() { window.print(); }
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  
+  loadSchedule();
+
+  document.getElementById('date-prev')?.addEventListener('click', function() { changeDate(-1); });
+  document.getElementById('date-next')?.addEventListener('click', function() { changeDate(1); });
+  document.getElementById('date-today')?.addEventListener('click', goToday);
+  document.getElementById('date-picker')?.addEventListener('change', function() { setDate(this.value); });
+  document.getElementById('branch-filter')?.addEventListener('change', loadSchedule);
+
+  document.getElementById('view-list')?.addEventListener('click', function() { setView('list'); });
+  document.getElementById('view-timeline')?.addEventListener('click', function() { setView('timeline'); });
+
+  document.getElementById('schedule-save-btn')?.addEventListener('click', scheduleLesson);
+  document.getElementById('status-update-btn')?.addEventListener('click', updateStatus);
+  document.getElementById('print-qr-btn')?.addEventListener('click', printQR);
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.status-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const status = btn.dataset.status;
+      openStatusModal(id, status);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.qr-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      showQR(id);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.cancel-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      cancelLesson(id);
+    }
+  });
+
+  console.log('✅ Schedule page initialized!');
+});
+</script>
+</body>
+</html>

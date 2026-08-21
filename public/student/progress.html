@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Progress — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">🎓 Student Portal</div></div></div>
+    <button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Main</div>
+    <a href="/student/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-home"></i></span> Dashboard</a>
+    <a href="/student/lessons.html" class="nav-item"><span class="ni"><i class="fas fa-car"></i></span> My Lessons</a>
+    <a href="/student/book-lesson.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-plus"></i></span> Book Lesson</a>
+    <a href="/student/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Attendance</a>
+    <a href="/student/progress.html" class="nav-item active"><span class="ni"><i class="fas fa-chart-line"></i></span> My Progress</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/student/payments.html" class="nav-item"><span class="ni"><i class="fas fa-credit-card"></i></span> Payments</a>
+    <a href="/student/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications <span class="nav-badge notif-badge" style="display:none">0</span></a>
+    <a href="/student/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> My Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">ST</div>
+      <div><div class="sb-name" id="sb-name">Student</div><div class="sb-role">Student</div></div>
+      <a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+  </div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+      <div><div class="pg-title">My Progress</div><div class="pg-sub">AI-powered learning insights</div></div>
+    </div>
+    <div class="topbar-right">
+      <a href="/student/notifications.html" class="tb-action"><i class="fas fa-bell"></i><span class="notif-dot notif-badge" style="display:none">0</span></a>
+      <div class="tb-user-btn" data-dropdown="user-dd">
+        <div class="tb-avatar" id="tb-avatar">ST</div>
+        <span class="tb-name" id="tb-name">Student</span>
+        <div class="dropdown-menu" id="user-dd">
+          <a href="/student/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+          <a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- PACKAGE PROGRESS -->
+    <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:var(--r-lg);padding:26px;color:#fff;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:.72rem;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Current Package</div>
+          <h2 style="font-size:1.4rem;margin-bottom:4px" id="pkg-name">Loading…</h2>
+          <div style="font-size:.86rem;opacity:.7" id="pkg-dates">—</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.72rem;opacity:.6;margin-bottom:4px">Completion</div>
+          <div style="font-family:var(--ff-head);font-size:2.5rem;font-weight:800;color:var(--accent)" id="pkg-completion">—%</div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <div style="display:flex;justify-content:space-between;font-size:.76rem;opacity:.65;margin-bottom:6px">
+          <span>Lessons Progress</span>
+          <span id="pkg-progress-text">0 / 0</span>
+        </div>
+        <div class="progress progress-lg"><div class="progress-bar amber" id="pkg-progress-bar" style="width:0%;transition:width 1s ease"></div></div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-star" style="color:var(--success)"></i></div><div><div class="stat-val" id="avg-score">—</div><div class="stat-lbl">Average Score</div></div></div>
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-trophy" style="color:var(--info)"></i></div><div><div class="stat-val" id="best-score">—</div><div class="stat-lbl">Best Score</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-chart-line" style="color:var(--accent)"></i></div><div><div class="stat-val" id="improvement">—</div><div class="stat-lbl">Improvement</div></div></div>
+      <div class="stat-card"><div class="stat-ico purple"><i class="fas fa-calendar-check" style="color:#9333ea"></i></div><div><div class="stat-val" id="attendance-rate">—</div><div class="stat-lbl">Attendance Rate</div></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+
+      <!-- AI TEST READINESS -->
+      <div class="ai-card">
+        <div class="ai-label">🤖 AI Test Readiness Score</div>
+        <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:12px">
+          <div class="ai-score" id="ai-score">—%</div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:.8rem;opacity:.65" id="ai-class">Calculating…</div>
+            <div style="font-size:.72rem;opacity:.5" id="ai-generated">Last updated now</div>
+          </div>
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:.74rem;opacity:.6;margin-bottom:6px"><span>Pass Probability</span><span id="pass-prob">—%</span></div>
+          <div class="progress progress-md"><div class="progress-bar amber" id="ai-bar" style="width:0%;transition:width 1s ease"></div></div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin-bottom:8px">Recommendations</div>
+          <div id="ai-recs"></div>
+        </div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <div style="text-align:center"><div style="font-size:1rem;font-weight:700;color:var(--accent)" id="b-lessons">—</div><div style="font-size:.65rem;opacity:.55">Lessons %</div></div>
+            <div style="text-align:center"><div style="font-size:1rem;font-weight:700;color:var(--accent)" id="b-attendance">—</div><div style="font-size:.65rem;opacity:.55">Attendance %</div></div>
+            <div style="text-align:center"><div style="font-size:1rem;font-weight:700;color:var(--accent)" id="b-perf">—</div><div style="font-size:.65rem;opacity:.55">Performance %</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DROPOUT RISK + SKILL BREAKDOWN -->
+      <div style="display:grid;grid-template-rows:auto auto;gap:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚠️ Dropout Risk Assessment</div></div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:20px">
+              <div style="text-align:center;flex-shrink:0">
+                <div style="width:72px;height:72px;border-radius:50%;border:4px solid var(--gray-100);display:flex;align-items:center;justify-content:center;flex-direction:column">
+                  <div style="font-family:var(--ff-head);font-size:1.3rem;font-weight:800;color:var(--primary)" id="risk-num">—</div>
+                  <div style="font-size:.58rem;color:var(--gray-400)">SCORE</div>
+                </div>
+              </div>
+              <div>
+                <div id="risk-badge" class="risk-low" style="margin-bottom:8px">Low Risk</div>
+                <div id="risk-rec" style="font-size:.82rem;color:var(--gray-500)">Loading…</div>
+              </div>
+            </div>
+            <hr class="divider">
+            <div style="display:grid;gap:8px" id="risk-factors"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Skill Areas</div></div>
+          <div class="card-body">
+            <div style="display:grid;gap:12px" id="skill-bars">
+              <div style="font-size:.84rem;color:var(--gray-400);text-align:center;padding:12px">Loading skill data…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORE HISTORY TABLE -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-history" style="color:var(--accent)"></i> Score History</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Lesson Type</th><th>Instructor</th><th>Score</th><th>Performance</th><th>Notes</th></tr></thead>
+          <tbody id="score-tbody">
+            <tr><td colspan="6" style="text-align:center;padding:28px"><span class="spinner spinner-dark"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+async function loadProgress() {
+  try {
+    const data = await api('/api/student/progress');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+
+    const u = data.user;
+    const initials = u.firstName[0] + u.lastName[0];
+    ['sb-avatar','tb-avatar'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = initials; });
+    ['sb-name','tb-name'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = u.firstName + ' ' + u.lastName; });
+
+    // Package progress
+    const e = data.enrollment;
+    if (e) {
+      document.getElementById('pkg-name').textContent = e.packageName || 'Active Package';
+      document.getElementById('pkg-dates').textContent = `Started: ${fmtDate(e.startDate)} · Expires: ${fmtDate(e.endDate)}`;
+      const pct = e.totalLessons > 0 ? Math.round((e.lessonsCompleted / e.totalLessons) * 100) : 0;
+      document.getElementById('pkg-completion').textContent = pct + '%';
+      document.getElementById('pkg-progress-text').textContent = `${e.lessonsCompleted} / ${e.totalLessons} lessons`;
+      document.getElementById('pkg-progress-bar').style.width = pct + '%';
+    } else {
+      document.getElementById('pkg-name').textContent = 'No Active Enrollment';
+      document.getElementById('pkg-dates').textContent = 'Contact admin to enrol in a package';
+    }
+
+    // Stats
+    document.getElementById('avg-score').textContent = (data.avgScore || 0) + '%';
+    document.getElementById('best-score').textContent = (data.bestScore || 0) + '%';
+    const imp = data.improvement >= 0 ? '+' + data.improvement : data.improvement;
+    document.getElementById('improvement').textContent = (data.improvement != null ? imp + '%' : '—');
+    document.getElementById('attendance-rate').textContent = (data.attendanceRate || 0) + '%';
+
+    // AI
+    const ai = data.testReadiness;
+    document.getElementById('ai-score').textContent = ai.score + '%';
+    document.getElementById('ai-class').textContent = ai.classification;
+    document.getElementById('pass-prob').textContent = ai.passProbability + '%';
+    document.getElementById('ai-bar').style.width = ai.score + '%';
+    document.getElementById('b-lessons').textContent = (ai.breakdown?.lessonProgress || 0) + '%';
+    document.getElementById('b-attendance').textContent = (ai.breakdown?.attendanceRate || 0) + '%';
+    document.getElementById('b-perf').textContent = (ai.breakdown?.averageScore || 0) + '%';
+    document.getElementById('ai-recs').innerHTML = (ai.recommendations || []).map(r => `<div class="ai-rec">${r}</div>`).join('');
+
+    // Risk
+    const risk = data.dropoutRisk;
+    document.getElementById('risk-num').textContent = risk.riskScore;
+    const rb = document.getElementById('risk-badge');
+    rb.textContent = risk.riskLevel;
+    rb.className = risk.riskColor === 'danger' ? 'risk-high' : risk.riskColor === 'warning' ? 'risk-med' : 'risk-low';
+    document.getElementById('risk-rec').textContent = risk.recommendations[0] || '';
+    const f = risk.factors;
+    document.getElementById('risk-factors').innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--gray-500)">Missed lessons rate</span><span style="font-weight:600">${f.missedLessonsRate}%</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--gray-500)">Consecutive misses</span><span style="font-weight:600">${f.consecutiveMisses}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--gray-500)">Days since last lesson</span><span style="font-weight:600">${f.daysSinceLastLesson}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--gray-500)">Attendance trend</span><span class="badge badge-${f.trend==='improving'?'success':f.trend==='declining'?'danger':'gray'}">${f.trend}</span></div>`;
+
+    // Skill bars
+    const skills = [
+      { label:'Vehicle Control', val: Math.min(data.avgScore || 65, 100) },
+      { label:'Road Awareness', val: Math.min((data.avgScore || 65) - 5, 100) },
+      { label:'Parking & Yard', val: Math.min((data.avgScore || 65) + 5, 100) },
+      { label:'Observation', val: Math.min((data.avgScore || 65) - 10, 100) },
+      { label:'K53 Rules', val: Math.min((data.avgScore || 65) + 3, 100) },
+    ];
+    document.getElementById('skill-bars').innerHTML = skills.map(s => `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px"><span style="color:var(--gray-700)">${s.label}</span><span style="font-weight:700;color:${s.val>=75?'var(--success)':'var(--warning)'}">${Math.round(s.val)}%</span></div>
+        <div class="progress progress-sm"><div class="progress-bar ${s.val>=75?'green':'amber'}" style="width:${Math.round(s.val)}%;transition:width 1s ease"></div></div>
+      </div>`).join('');
+
+    // Score history
+    const tbody = document.getElementById('score-tbody');
+    const scored = (data.completedLessons || []).filter(l => l.student_score != null);
+    if (scored.length) {
+      tbody.innerHTML = scored.map(l => {
+        const s = l.student_score;
+        const color = s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)';
+        const label = s >= 80 ? '🟢 Excellent' : s >= 60 ? '🟡 Good' : '🔴 Needs Work';
+        return `<tr>
+          <td>${fmtDate(l.scheduled_date)}</td>
+          <td><span class="badge badge-info">${(l.lesson_type||'').replace('_',' ')}</span></td>
+          <td>${l.instructor_name || '—'}</td>
+          <td><div style="font-size:1.1rem;font-weight:800;color:${color}">${s}%</div></td>
+          <td style="font-size:.82rem">${label}</td>
+          <td style="font-size:.8rem;color:var(--gray-500)">${l.instructor_notes || '—'}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><div class="empty-state-icon">📊</div><div class="empty-state-title">No scored lessons yet</div><div class="empty-state-desc">Scores appear after completed lessons.</div></td></tr>';
+    }
+
+  } catch(err) {
+    console.error(err);
+  }
+}
+loadProgress();
+</script>
+</body>
+</html>

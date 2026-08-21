@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Insights — Instructor | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">Instructor Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Work</div>
+    <a href="/instructor/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Lessons</a>
+    <a href="/instructor/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/instructor/ai-insights.html" class="nav-item active"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/instructor/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/instructor/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> Profile</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">IN</div><div><div class="sb-name" id="sb-name">Instructor</div><div class="sb-role">Instructor</div></div><a href="/auth/logout" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">AI Insights</div><div class="pg-sub">Student intelligence for your students</div></div></div>
+    <div class="topbar-right">
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">IN</div><span class="tb-name" id="tb-name">Instructor</span><div class="dropdown-menu" id="user-dd"><a href="/instructor/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a><a href="/auth/logout" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+  <div class="page-content">
+    <!-- AI SUMMARY CARDS -->
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-check-circle" style="color:var(--success)"></i></div><div><div class="stat-val" id="sum-ready">—</div><div class="stat-lbl">Ready for Test</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-clock" style="color:var(--accent)"></i></div><div><div class="stat-val" id="sum-nearly">—</div><div class="stat-lbl">Nearly Ready</div></div></div>
+      <div class="stat-card"><div class="stat-ico red"><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i></div><div><div class="stat-val" id="sum-highrisk">—</div><div class="stat-lbl">High Dropout Risk</div></div></div>
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-robot" style="color:var(--info)"></i></div><div><div class="stat-val" id="sum-total">—</div><div class="stat-lbl">Students Analysed</div></div></div>
+    </div>
+
+    <!-- STUDENT AI TABLE -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-robot" style="color:var(--accent)"></i> Your Students' Predictions</div><span id="ai-count" class="badge badge-primary">Loading…</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Test Readiness</th>
+              <th>Pass Probability</th>
+              <th>Readiness Status</th>
+              <th>Dropout Risk</th>
+              <th>Risk Level</th>
+              <th>Recommendation</th>
+            </tr>
+          </thead>
+          <tbody id="ai-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:36px"><span class="spinner spinner-dark"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allPredictions = [];
+
+async function loadAI() {
+  try {
+    const data = await api('/api/instructor/ai-insights');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    
+    if (data.user) {
+      const u = data.user;
+      const init = u.firstName[0] + u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = init; });
+      ['sb-name','tb-name'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = u.firstName + ' ' + u.lastName; });
+    }
+
+    allPredictions = data.predictions || [];
+    const s = data.summary;
+    document.getElementById('sum-ready').textContent = s.ready || 0;
+    document.getElementById('sum-nearly').textContent = s.nearly || 0;
+    document.getElementById('sum-highrisk').textContent = s.highRisk || 0;
+    document.getElementById('sum-total').textContent = s.total || 0;
+    document.getElementById('ai-count').textContent = allPredictions.length + ' students';
+    renderTable(allPredictions);
+  } catch(err) { console.error(err); }
+}
+
+function renderTable(predictions) {
+  const tbody = document.getElementById('ai-tbody');
+  if (!predictions.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="empty-state-icon">🤖</div><div class="empty-state-title">No predictions available for your students</div></td></tr>';
+    return;
+  }
+  const rColors = {'High Risk':'risk-high','Medium Risk':'risk-med','Low Risk':'risk-low'};
+  tbody.innerHTML = predictions.map(p => {
+    const tr = p.testReadiness;
+    const dr = p.dropoutRisk;
+    const readColor = tr.score >= 80 ? 'var(--success)' : tr.score >= 60 ? 'var(--warning)' : 'var(--danger)';
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0">${p.first_name[0]}${p.last_name[0]}</div>
+          <div style="font-weight:600;font-size:.86rem">${p.first_name} ${p.last_name}</div>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-family:var(--ff-head);font-size:1.1rem;font-weight:800;color:${readColor}">${tr.score}%</div>
+          <div class="progress progress-sm" style="width:60px"><div class="progress-bar" style="background:${readColor};width:${tr.score}%"></div></div>
+        </div>
+      </td>
+      <td style="font-weight:700;color:${tr.passProbability >= 80 ? 'var(--success)' : 'var(--warning)'}">${tr.passProbability}%</td>
+      <td><span class="badge ${tr.classification === 'Ready' ? 'badge-success' : tr.classification === 'Nearly Ready' ? 'badge-info' : tr.classification === 'In Progress' ? 'badge-warning' : 'badge-danger'}">${tr.classification}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-family:var(--ff-head);font-size:1rem;font-weight:700;color:var(--primary)">${dr.riskScore}</div>
+          <div class="progress progress-sm" style="width:50px"><div class="progress-bar ${dr.riskColor === 'danger' ? 'red' : dr.riskColor === 'warning' ? 'amber' : 'green'}" style="width:${dr.riskScore}%"></div></div>
+        </div>
+      </td>
+      <td><span class="${rColors[dr.riskLevel] || 'risk-low'}">${dr.riskLevel}</span></td>
+      <td style="font-size:.78rem;color:var(--gray-500);max-width:200px">${tr.recommendations[0] || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadAI();
+  console.log('✅ Instructor AI Insights page initialized!');
+});
+</script>
+</body>
+</html>

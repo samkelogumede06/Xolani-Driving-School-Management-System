@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Lessons — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">🎓 Student Portal</div></div></div>
+    <button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Main</div>
+    <a href="/student/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-home"></i></span> Dashboard</a>
+    <a href="/student/lessons.html" class="nav-item active"><span class="ni"><i class="fas fa-car"></i></span> My Lessons</a>
+    <a href="/student/book-lesson.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-plus"></i></span> Book Lesson</a>
+    <a href="/student/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Attendance</a>
+    <a href="/student/progress.html" class="nav-item"><span class="ni"><i class="fas fa-chart-line"></i></span> My Progress</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/student/payments.html" class="nav-item"><span class="ni"><i class="fas fa-credit-card"></i></span> Payments</a>
+    <a href="/student/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications <span class="nav-badge notif-badge" style="display:none">0</span></a>
+    <a href="/student/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> My Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">ST</div>
+      <div><div class="sb-name" id="sb-name">Student</div><div class="sb-role">Student</div></div>
+      <a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+  </div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+      <div><div class="pg-title">My Lessons</div><div class="pg-sub">Your full lesson schedule and history</div></div>
+    </div>
+    <div class="topbar-right">
+      <a href="/student/notifications.html" class="tb-action"><i class="fas fa-bell"></i><span class="notif-dot notif-badge" style="display:none">0</span></a>
+      <div class="tb-user-btn" data-dropdown="user-dd">
+        <div class="tb-avatar" id="tb-avatar">ST</div>
+        <span class="tb-name" id="tb-name">Student</span>
+        <div class="dropdown-menu" id="user-dd">
+          <a href="/student/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+          <a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <!-- STATS -->
+    <div class="stats-row" style="margin-bottom:22px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-calendar-alt" style="color:var(--info)"></i></div><div><div class="stat-val" id="stat-total">—</div><div class="stat-lbl">Total Lessons</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-check-circle" style="color:var(--success)"></i></div><div><div class="stat-val" id="stat-completed">—</div><div class="stat-lbl">Completed</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-clock" style="color:var(--accent)"></i></div><div><div class="stat-val" id="stat-upcoming">—</div><div class="stat-lbl">Upcoming</div></div></div>
+      <div class="stat-card"><div class="stat-ico red"><i class="fas fa-times-circle" style="color:var(--danger)"></i></div><div><div class="stat-val" id="stat-missed">—</div><div class="stat-lbl">Missed</div></div></div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="lesson-search" class="form-control" placeholder="Search lessons…" style="min-width:220px"></div>
+      <select id="status-filter" class="form-control" style="width:auto">
+        <option value="">All Statuses</option>
+        <option value="scheduled">Scheduled</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="no_show">No Show</option>
+      </select>
+      <select id="type-filter" class="form-control" style="width:auto">
+        <option value="">All Types</option>
+        <option value="practical">Practical</option>
+        <option value="theory">Theory</option>
+        <option value="yard_test">Yard Test</option>
+        <option value="road_test">Road Test</option>
+      </select>
+    </div>
+
+    <!-- LESSONS TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-list" style="color:var(--accent)"></i> All Lessons</div>
+        <span id="lesson-count" class="badge badge-primary">Loading…</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Type</th>
+              <th>Instructor</th>
+              <th>Vehicle</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="lessons-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:36px"><span class="spinner spinner-dark"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QR SCAN INSTRUCTIONS -->
+    <div class="card" style="margin-top:20px;border-left:4px solid var(--accent)">
+      <div class="card-header">
+        <div class="card-title">📲 QR Code Attendance</div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+          <div>
+            <h4 style="color:var(--primary);margin-bottom:8px">How QR Attendance Works</h4>
+            <div style="display:grid;gap:10px">
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <span style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--primary);flex-shrink:0">1</span>
+                <p style="font-size:.86rem;color:var(--gray-600)">Arrive at the branch for your scheduled lesson.</p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <span style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--primary);flex-shrink:0">2</span>
+                <p style="font-size:.86rem;color:var(--gray-600)"><strong>Your instructor will show you a QR code</strong> at the start of the lesson. <span style="color:var(--accent);font-weight:600">You cannot scan it from home!</span></p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <span style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--primary);flex-shrink:0">3</span>
+                <p style="font-size:.86rem;color:var(--gray-600)">Open your phone's camera or QR scanner and scan the code <strong>at the branch.</strong></p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <span style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--primary);flex-shrink:0">4</span>
+                <p style="font-size:.86rem;color:var(--gray-600)">Your attendance is automatically recorded — no paper, no fuss!</p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(245,166,35,.08);border-radius:var(--r-sm);padding:12px;margin-top:6px">
+                <span style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--primary);flex-shrink:0">⏰</span>
+                <p style="font-size:.82rem;color:var(--gray-600)">You <strong>must be at the branch</strong> to scan the QR code. The QR code is only valid for a limited time after your lesson starts.</p>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--gray-50);border-radius:var(--r);padding:24px;text-align:center;border:1px solid var(--gray-200)">
+            <div style="font-size:3rem;margin-bottom:12px">📍</div>
+            <h4 style="color:var(--primary);margin-bottom:8px">Scan at the Branch</h4>
+            <p style="font-size:.82rem;color:var(--gray-500);margin-bottom:16px">Your instructor will display the QR code when you arrive for your lesson.</p>
+            <div style="background:rgba(15,42,74,.05);border-radius:var(--r-sm);padding:12px;font-size:.78rem;color:var(--gray-600)">
+              <i class="fas fa-info-circle" style="color:var(--accent)"></i> 
+              <strong>Umlazi V:</strong> Griffiths Mxenge Highway<br>
+              <strong>Umlazi W:</strong> Shop 14, Edamini Centre
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allLessons = [];
+
+async function loadLessons() {
+  try {
+    const data = await api('/api/student/lessons');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+
+    if (data.user) {
+      const initials = data.user.firstName[0] + data.user.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = initials; });
+      ['sb-name','tb-name'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = data.user.firstName + ' ' + data.user.lastName; });
+    }
+
+    allLessons = data.lessons || [];
+    updateStats();
+    renderLessons(allLessons);
+  } catch(err) {
+    console.error(err);
+    document.getElementById('lessons-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--gray-400)">Failed to load lessons. Please refresh.</td></tr>';
+  }
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = allLessons.length;
+  document.getElementById('stat-completed').textContent = allLessons.filter(l => l.status === 'completed').length;
+  document.getElementById('stat-upcoming').textContent = allLessons.filter(l => l.status === 'scheduled').length;
+  document.getElementById('stat-missed').textContent = allLessons.filter(l => l.status === 'no_show').length;
+}
+
+// ─── Cancel Lesson ──────────────────────────────────────────
+async function cancelLesson(id) {
+  if (!confirm('Are you sure you want to cancel this lesson?')) return;
+  
+  const data = await api(`/api/student/lessons/${id}/cancel`, { method: 'POST' });
+  if (data.success) {
+    Toast.success('Lesson cancelled successfully.');
+    loadLessons();
+  } else {
+    Toast.error(data.error || 'Failed to cancel lesson.');
+  }
+}
+
+function renderLessons(lessons) {
+  const tbody = document.getElementById('lessons-tbody');
+  document.getElementById('lesson-count').textContent = lessons.length + ' lesson(s)';
+  if (!lessons.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="empty-state-icon">📅</div><div class="empty-state-title">No lessons found</div></td></tr>';
+    return;
+  }
+  const typeColors = { practical:'badge-info', theory:'badge-primary', yard_test:'badge-warning', road_test:'badge-success', observation:'badge-gray' };
+  const statusColors = { scheduled:'badge-info', completed:'badge-success', cancelled:'badge-danger', no_show:'badge-warning', in_progress:'badge-warning' };
+  tbody.innerHTML = lessons.map(l => `
+    <tr>
+      <td>
+        <div style="font-weight:600;color:var(--primary)">${fmtDate(l.scheduled_date)}</div>
+        <div style="font-size:.76rem;color:var(--gray-400)">${fmtTime(l.scheduled_time)} · ${l.duration_minutes || 60} min</div>
+      </td>
+      <td><span class="badge ${typeColors[l.lesson_type]||'badge-gray'}">${(l.lesson_type||'').replace('_',' ')}</span></td>
+      <td>
+        <div style="font-size:.86rem;font-weight:500">${l.instructor_name || 'TBA'}</div>
+        <div style="font-size:.74rem;color:var(--gray-400)">${l.branch_name || ''}</div>
+      </td>
+      <td style="font-size:.84rem">${l.vehicle || '—'}</td>
+      <td>
+        ${l.student_score != null
+          ? `<div style="display:flex;align-items:center;gap:6px"><div style="font-weight:700;color:${l.student_score>=75?'var(--success)':'var(--warning)'}">${l.student_score}%</div></div>`
+          : '<span style="color:var(--gray-300)">—</span>'}
+      </td>
+      <td><span class="badge ${statusColors[l.status]||'badge-gray'}">${l.status||'—'}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${l.instructor_notes ? `<button onclick="alert('${l.instructor_notes.replace(/'/g,"\'")}')" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)" title="Instructor Notes"><i class="fas fa-comment"></i></button>` : ''}
+          ${l.status === 'scheduled' ? `
+            <span style="font-size:.7rem;color:var(--gray-400);padding:4px 8px;background:var(--gray-50);border-radius:4px">📷 Scan at branch</span>
+            <button class="btn btn-sm cancel-lesson-btn" style="background:var(--danger);color:#fff" data-id="${l.id}" title="Cancel Lesson"><i class="fas fa-times"></i> Cancel</button>
+          ` : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// Filter logic
+function applyFilters() {
+  const q = document.getElementById('lesson-search').value.toLowerCase();
+  const status = document.getElementById('status-filter').value;
+  const type = document.getElementById('type-filter').value;
+  const filtered = allLessons.filter(l => {
+    const matchQ = !q || JSON.stringify(l).toLowerCase().includes(q);
+    const matchStatus = !status || l.status === status;
+    const matchType = !type || l.lesson_type === type;
+    return matchQ && matchStatus && matchType;
+  });
+  renderLessons(filtered);
+}
+
+document.getElementById('lesson-search').addEventListener('input', applyFilters);
+document.getElementById('status-filter').addEventListener('change', applyFilters);
+document.getElementById('type-filter').addEventListener('change', applyFilters);
+
+// ─── Cancel button event listener ───────────────────────────
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.cancel-lesson-btn');
+  if (btn) {
+    const id = btn.dataset.id;
+    cancelLesson(id);
+  }
+});
+
+loadLessons();
+</script>
+</body>
+</html>

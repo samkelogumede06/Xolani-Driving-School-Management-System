@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Notifications — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">🎓 Student Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Main</div>
+    <a href="/student/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-home"></i></span> Dashboard</a>
+    <a href="/student/lessons.html" class="nav-item"><span class="ni"><i class="fas fa-car"></i></span> My Lessons</a>
+    <a href="/student/book-lesson.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-plus"></i></span> Book Lesson</a>
+    <a href="/student/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Attendance</a>
+    <a href="/student/progress.html" class="nav-item"><span class="ni"><i class="fas fa-chart-line"></i></span> My Progress</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/student/payments.html" class="nav-item"><span class="ni"><i class="fas fa-credit-card"></i></span> Payments</a>
+    <a href="/student/notifications.html" class="nav-item active"><span class="ni"><i class="fas fa-bell"></i></span> Notifications</a>
+    <a href="/student/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> My Profile</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">ST</div><div><div class="sb-name" id="sb-name">Student</div><div class="sb-role">Student</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+    <div><div class="pg-title">Notifications</div><div class="pg-sub">All your alerts and messages</div></div></div>
+    <div class="topbar-right">
+      <button onclick="markAllRead()" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-check-double"></i> Mark All Read</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">ST</div><span class="tb-name" id="tb-name">Student</span><div class="dropdown-menu" id="user-dd"><a href="/student/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+  <div class="page-content">
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-bell" style="color:var(--info)"></i></div><div><div class="stat-val" id="n-total">—</div><div class="stat-lbl">Total</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-envelope" style="color:var(--accent)"></i></div><div><div class="stat-val" id="n-unread">—</div><div class="stat-lbl">Unread</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-car" style="color:var(--success)"></i></div><div><div class="stat-val" id="n-lessons">—</div><div class="stat-lbl">Lesson Alerts</div></div></div>
+      <div class="stat-card"><div class="stat-ico purple"><i class="fas fa-money-bill" style="color:#9333ea"></i></div><div><div class="stat-val" id="n-payments">—</div><div class="stat-lbl">Payment Alerts</div></div></div>
+    </div>
+
+    <div id="notifications-list" style="display:grid;gap:10px">
+      <div style="text-align:center;padding:36px;color:var(--gray-400)"><span class="spinner spinner-dark"></span></div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allNotifs = [];
+async function loadNotifications() {
+  try {
+    const data = await api('/api/student/notifications');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; const init = u.firstName[0]+u.lastName[0];
+    ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+    ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    allNotifs = data.notifications || [];
+    document.getElementById('n-total').textContent = allNotifs.length;
+    document.getElementById('n-unread').textContent = allNotifs.filter(n=>!n.is_read).length;
+    document.getElementById('n-lessons').textContent = allNotifs.filter(n=>n.type==='lesson').length;
+    document.getElementById('n-payments').textContent = allNotifs.filter(n=>n.type==='payment').length;
+    renderNotifs(allNotifs);
+  } catch(err) { console.error(err); }
+}
+function renderNotifs(notifs) {
+  const list = document.getElementById('notifications-list');
+  if (!notifs.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:56px"><div class="empty-state-icon">🔔</div><div class="empty-state-title">No notifications</div><div class="empty-state-desc">You\'re all caught up!</div></div>';
+    return;
+  }
+  const icons = {lesson:'🚗',payment:'💰',success:'✅',warning:'⚠️',error:'❌',info:'ℹ️',system:'⚙️'};
+  const bColors = {lesson:'badge-info',payment:'badge-success',success:'badge-success',warning:'badge-warning',error:'badge-danger',info:'badge-primary',system:'badge-gray'};
+  list.innerHTML = notifs.map(n => `
+    <div class="card" style="${!n.is_read?'border-left:3px solid var(--accent);background:rgba(245,166,35,.02)':''}" onclick="markRead('${n.id}')">
+      <div class="card-body" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:16px 20px">
+        <div style="width:42px;height:42px;border-radius:12px;background:${!n.is_read?'rgba(245,166,35,.12)':'var(--gray-100)'};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${icons[n.type]||'🔔'}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+            <div style="font-weight:${!n.is_read?'700':'600'};color:var(--primary)">${n.title}</div>
+            ${!n.is_read?'<span style="width:7px;height:7px;background:var(--accent);border-radius:50%;display:inline-block"></span>':''}
+            <span class="badge ${bColors[n.type]||'badge-gray'}" style="font-size:.6rem">${n.type}</span>
+          </div>
+          <div style="font-size:.84rem;color:var(--gray-600);margin-bottom:4px">${n.message}</div>
+          <div style="font-size:.72rem;color:var(--gray-400)">${fmtDate(n.created_at)}</div>
+        </div>
+        ${n.action_url ? `<a href="${n.action_url}" class="btn btn-sm btn-dark" onclick="event.stopPropagation()">View</a>` : ''}
+      </div>
+    </div>`).join('');
+}
+async function markRead(id) {
+  await api(`/api/notifications/${id}/read`, { method:'POST' });
+  const n = allNotifs.find(x=>x.id===id);
+  if (n) { n.is_read = true; renderNotifs(allNotifs); }
+}
+async function markAllRead() {
+  await api('/api/notifications/mark-all-read', { method:'POST' });
+  allNotifs.forEach(n=>n.is_read=true);
+  renderNotifs(allNotifs);
+  document.getElementById('n-unread').textContent = 0;
+  Toast.success('All notifications marked as read.');
+}
+loadNotifications();
+</script>
+</body>
+</html>

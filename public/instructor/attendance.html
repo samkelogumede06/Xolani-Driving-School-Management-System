@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Attendance — Instructor | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">Instructor Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Work</div>
+    <a href="/instructor/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Lessons</a>
+    <a href="/instructor/attendance.html" class="nav-item active"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/instructor/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/instructor/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/instructor/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> Profile</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">IN</div><div><div class="sb-name" id="sb-name">Instructor</div><div class="sb-role">Instructor</div></div><a href="/auth/logout" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Attendance</div><div class="pg-sub">Track student attendance for your lessons</div></div></div>
+    <div class="topbar-right">
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">IN</div><span class="tb-name" id="tb-name">Instructor</span><div class="dropdown-menu" id="user-dd"><a href="/instructor/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a><a href="/auth/logout" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+  <div class="page-content">
+    <!-- DATE NAV -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="att-date-prev" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-chevron-left"></i></button>
+          <div>
+            <div style="font-weight:700;color:var(--primary)" id="att-date-display">Today</div>
+            <div style="font-size:.72rem;color:var(--gray-400)" id="att-date-sub"></div>
+          </div>
+          <button id="att-date-next" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-chevron-right"></i></button>
+          <button id="att-date-today" class="btn btn-sm btn-dark">Today</button>
+        </div>
+        <input type="date" id="att-date-picker" class="form-control" style="width:auto">
+        <div style="margin-left:auto;display:flex;gap:16px">
+          <div style="text-align:center"><div style="font-family:var(--ff-head);font-size:1.4rem;font-weight:800;color:var(--success)" id="att-present">—</div><div style="font-size:.7rem;color:var(--gray-400)">Present</div></div>
+          <div style="text-align:center"><div style="font-family:var(--ff-head);font-size:1.4rem;font-weight:800;color:var(--danger)" id="att-absent">—</div><div style="font-size:.7rem;color:var(--gray-400)">Absent</div></div>
+          <div style="text-align:center"><div style="font-family:var(--ff-head);font-size:1.4rem;font-weight:800;color:var(--info)" id="att-scheduled">—</div><div style="font-size:.7rem;color:var(--gray-400)">Scheduled</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-clipboard-check" style="color:var(--accent)"></i> Attendance Register</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Time</th><th>Student</th><th>Lesson Type</th><th>Status</th><th>Manual Mark</th></tr>
+          </thead>
+          <tbody id="att-tbody">
+            <tr><td colspan="5" style="text-align:center;padding:36px"><span class="spinner spinner-dark"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let currentDate = new Date().toISOString().split('T')[0];
+let lessonsData = [];
+
+async function loadAttendance() {
+  try {
+    const data = await api(`/api/instructor/attendance?date=${currentDate}`);
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    
+    if (data.user) {
+      const u = data.user;
+      const init = u.firstName[0] + u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = init; });
+      ['sb-name','tb-name'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = u.firstName + ' ' + u.lastName; });
+    }
+
+    lessonsData = data.lessons || [];
+    updateDateDisplay();
+    updateStats();
+    renderTable();
+  } catch(err) { console.error(err); }
+}
+
+function updateDateDisplay() {
+  const d = new Date(currentDate + 'T00:00:00');
+  const isToday = currentDate === new Date().toISOString().split('T')[0];
+  document.getElementById('att-date-display').textContent = isToday ? 'Today' : d.toLocaleDateString('en-ZA',{weekday:'long'});
+  document.getElementById('att-date-sub').textContent = d.toLocaleDateString('en-ZA',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('att-date-picker').value = currentDate;
+}
+
+function updateStats() {
+  const present = lessonsData.filter(l => l.status === 'completed').length;
+  const absent = lessonsData.filter(l => l.status === 'no_show').length;
+  const scheduled = lessonsData.filter(l => l.status === 'scheduled' || l.status === 'in_progress').length;
+  document.getElementById('att-present').textContent = present;
+  document.getElementById('att-absent').textContent = absent;
+  document.getElementById('att-scheduled').textContent = scheduled;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('att-tbody');
+  if (!lessonsData.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="table-empty"><div class="empty-state-icon">📋</div><div class="empty-state-title">No lessons for this date</div></td></tr>';
+    return;
+  }
+  const sColors = {scheduled:'badge-info',completed:'badge-success',no_show:'badge-danger',in_progress:'badge-warning',cancelled:'badge-gray'};
+  tbody.innerHTML = lessonsData.map(l => `
+    <tr id="row-${l.id}">
+      <td style="font-weight:700;color:var(--primary)">${fmtTime(l.scheduled_time)}</td>
+      <td><div style="font-weight:600">${l.student_name || '—'}</div><div style="font-size:.72rem;color:var(--gray-400)">${l.student_phone || ''}</div></td>
+      <td><span class="badge badge-info">${(l.lesson_type || '').replace('_',' ')}</span></td>
+      <td><span class="badge ${sColors[l.status] || 'badge-gray'}" id="status-badge-${l.id}">${l.status || '—'}</span></td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-success mark-present-btn" data-id="${l.id}" title="Mark Present"><i class="fas fa-check"></i> Present</button>
+          <button class="btn btn-sm btn-danger mark-absent-btn" data-id="${l.id}" title="Mark Absent"><i class="fas fa-times"></i> Absent</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function markAttendance(lessonId, status) {
+  const data = await api(`/api/instructor/attendance/${lessonId}/mark`, { method: 'POST', body: { status } });
+  if (data.success) {
+    Toast.success(`Marked as ${status === 'completed' ? 'present' : 'absent'}.`);
+    loadAttendance();
+  } else Toast.error(data.error);
+}
+
+function changeDate(days) { const d = new Date(currentDate); d.setDate(d.getDate() + days); currentDate = d.toISOString().split('T')[0]; loadAttendance(); }
+function goToday() { currentDate = new Date().toISOString().split('T')[0]; loadAttendance(); }
+function setDate(v) { currentDate = v; loadAttendance(); }
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadAttendance();
+  document.getElementById('att-date-prev')?.addEventListener('click', function() { changeDate(-1); });
+  document.getElementById('att-date-next')?.addEventListener('click', function() { changeDate(1); });
+  document.getElementById('att-date-today')?.addEventListener('click', goToday);
+  document.getElementById('att-date-picker')?.addEventListener('change', function() { setDate(this.value); });
+  
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.mark-present-btn');
+    if (btn) { const id = btn.dataset.id; markAttendance(id, 'completed'); }
+  });
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.mark-absent-btn');
+    if (btn) { const id = btn.dataset.id; markAttendance(id, 'no_show'); }
+  });
+  console.log('✅ Instructor Attendance page initialized!');
+});
+</script>
+</body>
+</html>

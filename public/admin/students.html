@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Students — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div>
+    <a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item active"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button><div><div class="pg-title">Student Management</div><div class="pg-sub">View and manage all registered students</div></div></div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" data-open="enroll-modal"><i class="fas fa-user-plus"></i> Enrol Student</button>
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span><div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div></div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <!-- STATS -->
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-ico blue"><i class="fas fa-users" style="color:var(--info)"></i></div><div><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Students</div></div></div>
+      <div class="stat-card"><div class="stat-ico green"><i class="fas fa-user-check" style="color:var(--success)"></i></div><div><div class="stat-val" id="s-active">—</div><div class="stat-lbl">Active</div></div></div>
+      <div class="stat-card"><div class="stat-ico amber"><i class="fas fa-graduation-cap" style="color:var(--accent)"></i></div><div><div class="stat-val" id="s-enrolled">—</div><div class="stat-lbl">Enrolled</div></div></div>
+      <div class="stat-card"><div class="stat-ico red"><i class="fas fa-user-times" style="color:var(--danger)"></i></div><div><div class="stat-val" id="s-inactive">—</div><div class="stat-lbl">Inactive</div></div></div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="student-search" class="form-control" placeholder="Search by name, phone, ID…" style="min-width:240px"></div>
+        <select id="branch-filter" class="form-control" style="width:auto">
+        <option value="">All Branches</option>
+        <option value="umlazi-v">Umlazi V</option>
+        <option value="umlazi-w">Umlazi W</option>
+      </select>
+      <select id="status-filter" class="form-control" style="width:auto">
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <button id="export-btn" class="btn" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-download"></i> Export</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-users" style="color:var(--accent)"></i> All Students</div><span id="student-count" class="badge badge-primary">Loading…</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Phone</th><th>Branch</th><th>Enrollment</th><th>Progress</th><th>AI Risk</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="students-tbody"><tr><td colspan="8" style="text-align:center;padding:36px"><span class="spinner spinner-dark"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ENROLL MODAL -->
+<div class="modal-overlay" id="enroll-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title">👤 Enrol New Student in Package</div><button class="modal-close" data-close="enroll-modal">✕</button></div>
+    <div class="modal-body">
+      <form id="enroll-form">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Student <span class="req">*</span></label><select name="student_id" class="form-control" required id="enroll-student-select"><option value="">— Select Student —</option></select></div>
+          <div class="form-group"><label class="form-label">Package <span class="req">*</span></label><select name="package_id" class="form-control" required id="enroll-pkg-select"><option value="">— Select Package —</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Branch <span class="req">*</span></label><select name="branch_id" class="form-control" required id="enroll-branch-select"><option value="">— Select Branch —</option></select></div>
+          <div class="form-group"><label class="form-label">Instructor</label><select name="instructor_id" class="form-control" id="enroll-instructor-select"><option value="">— Assign Later —</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Start Date <span class="req">*</span></label><input type="date" name="start_date" class="form-control" required id="enroll-start-date"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" data-close="enroll-modal">Cancel</button>
+      <button class="btn btn-primary" id="enroll-save-btn"><i class="fas fa-check"></i> Enrol Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT DETAIL MODAL -->
+<div class="modal-overlay" id="student-detail-modal">
+  <div class="modal modal-xl">
+    <div class="modal-header"><div class="modal-title" id="detail-title">Student Details</div><button class="modal-close" data-close="student-detail-modal">✕</button></div>
+    <div class="modal-body" id="detail-body"><div style="text-align:center;padding:32px"><span class="spinner spinner-dark"></span></div></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let allStudents = [];
+
+async function loadStudents() {
+  try {
+    const data = await api('/api/admin/students');
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; 
+    if (u && u.firstName && u.lastName) {
+      const init = u.firstName[0]+u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+      ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    }
+    allStudents = data.students || [];
+    document.getElementById('s-total').textContent = allStudents.length;
+    document.getElementById('s-active').textContent = allStudents.filter(s=>s.is_active).length;
+    document.getElementById('s-enrolled').textContent = allStudents.filter(s=>s.enrollment_status==='active').length;
+    document.getElementById('s-inactive').textContent = allStudents.filter(s=>!s.is_active).length;
+    renderStudents(allStudents);
+
+    // Populate enroll dropdowns
+    const ss = document.getElementById('enroll-student-select');
+    allStudents.forEach(s => { const o=document.createElement('option'); o.value=s.id; o.textContent=s.first_name+' '+s.last_name; ss.appendChild(o); });
+
+    // Load packages, branches, instructors for modal
+    const [pkgData, branchData, instrData] = await Promise.all([
+      api('/api/admin/packages'), api('/api/admin/branches'), api('/api/admin/instructors')
+    ]);
+    const ps = document.getElementById('enroll-pkg-select');
+    (pkgData.packages||[]).forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.name} — R${p.price} (${p.lesson_count} lessons)`;ps.appendChild(o);});
+    const bs = document.getElementById('enroll-branch-select');
+    (branchData.branches||[]).forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name;bs.appendChild(o);});
+    const is = document.getElementById('enroll-instructor-select');
+    (instrData.instructors||[]).forEach(i=>{const o=document.createElement('option');o.value=i.id;o.textContent=i.first_name+' '+i.last_name;is.appendChild(o);});
+    
+    // Set default start date
+    const startDate = document.getElementById('enroll-start-date');
+    if (startDate) {
+      startDate.value = new Date().toISOString().split('T')[0];
+    }
+  } catch(err) { console.error(err); }
+}
+
+function renderStudents(students) {
+  const tbody = document.getElementById('students-tbody');
+  document.getElementById('student-count').textContent = students.length + ' student(s)';
+  if (!students.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="table-empty"><div class="empty-state-icon">👥</div><div class="empty-state-title">No students found</div></td></tr>';
+    return;
+  }
+  const riskColors = {'High Risk':'risk-high','Medium Risk':'risk-med','Low Risk':'risk-low'};
+  tbody.innerHTML = students.map(s => `
+    <tr data-id="${s.id}">
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0">${s.first_name[0]}${s.last_name[0]}</div>
+          <div><div style="font-weight:600;font-size:.86rem">${s.first_name} ${s.last_name}</div><div style="font-size:.72rem;color:var(--gray-400)">${s.email||'—'}</div></div>
+        </div>
+      </td>
+      <td style="font-size:.84rem">${s.phone||'—'}</td>
+      <td style="font-size:.82rem">${s.branch_name||'—'}</td>
+      <td><span class="badge ${s.enrollment_status==='active'?'badge-success':s.enrollment_status==='completed'?'badge-primary':'badge-gray'}">${s.enrollment_status||'Not enrolled'}</span></td>
+      <td>
+        <div style="font-size:.78rem;margin-bottom:4px">${s.lessons_completed||0}/${s.total_lessons||0} lessons</div>
+        <div class="progress progress-sm"><div class="progress-bar ${s.completion_pct>=75?'green':'amber'}" style="width:${s.completion_pct||0}%"></div></div>
+      </td>
+      <td><span class="${riskColors[s.ai_risk]||'risk-low'}">${s.ai_risk||'Low Risk'}</span></td>
+      <td><span class="badge ${s.is_active?'badge-success':'badge-danger'}">${s.is_active?'Active':'Inactive'}</span></td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-sm view-btn" style="background:var(--primary);color:#fff" data-id="${s.id}" data-name="${s.first_name} ${s.last_name}"><i class="fas fa-eye"></i></button>
+          <button class="btn btn-sm toggle-btn" style="background:${s.is_active?'var(--danger)':'var(--success)'};color:#fff" data-id="${s.id}" data-active="${s.is_active}" title="${s.is_active?'Deactivate':'Activate'}"><i class="fas fa-${s.is_active?'ban':'check'}"></i></button>
+          <button class="btn btn-sm delete-student-btn" style="background:var(--danger);color:#fff" data-id="${s.id}" data-name="${s.first_name} ${s.last_name}" title="Delete Permanently"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ─── Filters ────────────────────────────────────────────────
+function applyFilters() {
+  const q = document.getElementById('student-search').value.toLowerCase();
+  const branch = document.getElementById('branch-filter').value;
+  const status = document.getElementById('status-filter').value;
+  const filtered = allStudents.filter(s => {
+    const matchQ = !q || (s.first_name+' '+s.last_name+' '+(s.phone||'')+' '+(s.email||'')).toLowerCase().includes(q);
+    const matchB = !branch || (s.branch_name||'').toLowerCase().includes(branch);
+    const matchS = !status || (status==='active' ? s.is_active : !s.is_active);
+    return matchQ && matchB && matchS;
+  });
+  renderStudents(filtered);
+}
+
+// ─── View Student ──────────────────────────────────────────
+async function viewStudent(id, name) {
+  document.getElementById('detail-title').textContent = '👤 ' + name;
+  document.getElementById('detail-body').innerHTML = '<div style="text-align:center;padding:32px"><span class="spinner spinner-dark"></span></div>';
+  Modal.open('student-detail-modal');
+  try {
+    const data = await api(`/api/admin/students/${id}`);
+    if (!data.success) { document.getElementById('detail-body').innerHTML = '<p class="text-muted">Failed to load.</p>'; return; }
+    const s = data.student;
+    const ai = data.aiPredictions;
+    document.getElementById('detail-body').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <h4 style="color:var(--primary);margin-bottom:12px">Personal Info</h4>
+          <table style="width:100%;font-size:.84rem"><tbody>
+            <tr><td style="color:var(--gray-400);padding:4px 0;width:40%">Name</td><td><strong>${s.first_name} ${s.last_name}</strong></td></tr>
+            <tr><td style="color:var(--gray-400);padding:4px 0">Email</td><td>${s.email||'—'}</td></tr>
+            <tr><td style="color:var(--gray-400);padding:4px 0">Phone</td><td>${s.phone||'—'}</td></tr>
+            <tr><td style="color:var(--gray-400);padding:4px 0">ID Number</td><td>${s.id_number||'—'}</td></tr>
+            <tr><td style="color:var(--gray-400);padding:4px 0">Branch</td><td>${s.branch_name||'—'}</td></tr>
+            <tr><td style="color:var(--gray-400);padding:4px 0">Registered</td><td>${fmtDate(s.created_at)}</td></tr>
+          </tbody></table>
+        </div>
+        <div>
+          <h4 style="color:var(--primary);margin-bottom:12px">AI Predictions</h4>
+          <div style="background:rgba(15,42,74,.05);border-radius:var(--r-sm);padding:14px;margin-bottom:10px">
+            <div style="font-size:.7rem;text-transform:uppercase;color:var(--gray-400);margin-bottom:6px">Test Readiness</div>
+            <div style="font-size:2rem;font-weight:800;color:var(--primary);font-family:var(--ff-head)">${ai.testReadiness.score}%</div>
+            <div style="font-size:.78rem;color:var(--gray-500)">${ai.testReadiness.classification} · ${ai.testReadiness.passProbability}% pass probability</div>
+          </div>
+          <div style="background:rgba(15,42,74,.05);border-radius:var(--r-sm);padding:14px">
+            <div style="font-size:.7rem;text-transform:uppercase;color:var(--gray-400);margin-bottom:6px">Dropout Risk</div>
+            <div><span class="${ai.dropoutRisk.riskColor==='danger'?'risk-high':ai.dropoutRisk.riskColor==='warning'?'risk-med':'risk-low'}">${ai.dropoutRisk.riskLevel}</span></div>
+            <div style="font-size:.78rem;color:var(--gray-500);margin-top:4px">${ai.dropoutRisk.recommendations[0]||''}</div>
+          </div>
+        </div>
+      </div>
+      <hr class="divider">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-dark btn-sm schedule-btn" data-id="${s.id}"><i class="fas fa-calendar-plus"></i> Schedule Lesson</button>
+        <button class="btn btn-sm enroll-from-detail" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-box"></i> Enrol in Package</button>
+      </div>`;
+  } catch(err) { document.getElementById('detail-body').innerHTML = '<p class="text-muted">Error loading student details.</p>'; }
+}
+
+// ─── Toggle Status ─────────────────────────────────────────
+async function toggleStatus(id, currentStatus) {
+  if (!confirm(`${currentStatus ? 'Deactivate' : 'Activate'} this student?`)) return;
+  const data = await api(`/api/admin/students/${id}/toggle-status`, { method:'POST' });
+  if (data.success) { Toast.success('Status updated.'); loadStudents(); }
+  else Toast.error(data.error);
+}
+
+// ─── Delete Student ─────────────────────────────────────────
+async function deleteStudent(id, name) {
+  if (!confirm(`⚠️ Permanently delete student "${name}"?\n\nThis will DELETE:\n- Their profile\n- Their account\n- All their lessons\n- All their payments\n- All their notifications\n\nThis CANNOT be undone!`)) return;
+  
+  const btn = document.querySelector(`.delete-student-btn[data-id="${id}"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>'; }
+  
+  const data = await api(`/api/admin/students/${id}`, { method:'DELETE' });
+  if (data.success) {
+    Toast.success(`Student "${name}" has been permanently deleted.`);
+    loadStudents();
+  } else {
+    Toast.error(data.error || 'Failed to delete student.');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash"></i>'; }
+  }
+}
+
+// ─── Enroll Student ────────────────────────────────────────
+async function enrollStudent() {
+  const form = document.getElementById('enroll-form');
+  const fd = new FormData(form);
+  const body = Object.fromEntries(fd);
+  if (!body.student_id || !body.package_id || !body.branch_id || !body.start_date) { Toast.warning('Please fill all required fields.'); return; }
+  const data = await api('/api/admin/enrollments', { body });
+  if (data.success) { Toast.success('Student enrolled successfully!'); Modal.close('enroll-modal'); form.reset(); }
+  else Toast.error(data.error);
+}
+
+// ─── Export Students ────────────────────────────────────────
+function exportStudents() {
+  const csv = ['Name,Email,Phone,Branch,Enrollment,Status',
+    ...allStudents.map(s => `"${s.first_name} ${s.last_name}","${s.email||''}","${s.phone||''}","${s.branch_name||''}","${s.enrollment_status||''}","${s.is_active?'Active':'Inactive'}"`)
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'students-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  Toast.success('Students exported to CSV.');
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Load students
+  loadStudents();
+
+  // ─── Search & Filters ────────────────────────────────────
+  document.getElementById('student-search')?.addEventListener('input', applyFilters);
+  document.getElementById('student-search')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyFilters();
+    }
+  });
+  document.getElementById('branch-filter')?.addEventListener('change', applyFilters);
+  document.getElementById('status-filter')?.addEventListener('change', applyFilters);
+
+  // ─── Export button ──────────────────────────────────────
+  document.getElementById('export-btn')?.addEventListener('click', exportStudents);
+
+  // ─── Enroll button ──────────────────────────────────────
+  document.getElementById('enroll-save-btn')?.addEventListener('click', enrollStudent);
+
+  // ─── View buttons (delegated) ──────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.view-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const name = btn.dataset.name;
+      viewStudent(id, name);
+    }
+  });
+
+  // ─── Toggle buttons (delegated) ────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.toggle-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const active = btn.dataset.active === 'true';
+      toggleStatus(id, active);
+    }
+  });
+
+  // ─── Delete buttons (delegated) ────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.delete-student-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      const name = btn.dataset.name;
+      deleteStudent(id, name);
+    }
+  });
+
+  // ─── Schedule from detail modal ────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.schedule-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      window.location.href = '/admin/schedule.html?student=' + id;
+    }
+  });
+
+  // ─── Enrol from detail modal ───────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.enroll-from-detail');
+    if (btn) {
+      Modal.close('student-detail-modal');
+      Modal.open('enroll-modal');
+    }
+  });
+
+  console.log('✅ Students page initialized!');
+});
+</script>
+</body>
+</html>

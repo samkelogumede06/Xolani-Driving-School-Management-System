@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QR Scan — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">🎓 Student Portal</div></div></div>
+    <button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Main</div>
+    <a href="/student/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-home"></i></span> Dashboard</a>
+    <a href="/student/lessons.html" class="nav-item"><span class="ni"><i class="fas fa-car"></i></span> My Lessons</a>
+    <a href="/student/book-lesson.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-plus"></i></span> Book Lesson</a>
+    <a href="/student/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Attendance</a>
+    <a href="/student/progress.html" class="nav-item"><span class="ni"><i class="fas fa-chart-line"></i></span> My Progress</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/student/payments.html" class="nav-item"><span class="ni"><i class="fas fa-credit-card"></i></span> Payments</a>
+    <a href="/student/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications</a>
+    <a href="/student/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> My Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">ST</div>
+      <div><div class="sb-name" id="sb-name">Student</div><div class="sb-role">Student</div></div>
+      <a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+  </div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+      <div><div class="pg-title">QR Attendance</div><div class="pg-sub">Scan to mark your attendance</div></div>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-user-btn" data-dropdown="user-dd">
+        <div class="tb-avatar" id="tb-avatar">ST</div>
+        <span class="tb-name" id="tb-name">Student</span>
+        <div class="dropdown-menu" id="user-dd">
+          <a href="/student/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+          <a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <div class="card" style="max-width:600px;margin:0 auto">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-qrcode" style="color:var(--accent)"></i> Scan QR Code</div>
+      </div>
+      <div class="card-body" id="qr-scan-result">
+        <div style="text-align:center;padding:20px">
+          <div style="font-size:3rem;margin-bottom:16px">📷</div>
+          <div class="spinner spinner-dark" style="margin:0 auto"></div>
+          <p style="color:var(--gray-400);margin-top:12px">Processing QR code...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+// ─── Get token from URL ────────────────────────────────────
+function getTokenFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('token');
+}
+
+// ─── Process QR Scan ───────────────────────────────────────
+async function processQRScan() {
+  const token = getTokenFromURL();
+  const container = document.getElementById('qr-scan-result');
+  
+  if (!token) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:20px">
+        <div style="font-size:3rem;margin-bottom:16px">❌</div>
+        <h3 style="color:var(--danger)">No QR Code Found</h3>
+        <p style="color:var(--gray-500)">Please scan a valid QR code.</p>
+        <a href="/student/lessons.html" class="btn btn-dark" style="margin-top:16px"><i class="fas fa-arrow-left"></i> Back to Lessons</a>
+      </div>
+    `;
+    return;
+  }
+
+  try {
+    const data = await api(`/api/student/scan-qr/${token}`);
+    
+    if (data.success) {
+      if (data.alreadyMarked) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:3rem;margin-bottom:16px">✅</div>
+            <h3 style="color:var(--success)">Already Marked</h3>
+            <p style="color:var(--gray-500)">Attendance was already recorded for this lesson.</p>
+            <div style="background:var(--gray-50);border-radius:var(--r-sm);padding:16px;margin-top:12px;text-align:left">
+              <p style="font-size:.85rem"><strong>Date:</strong> ${fmtDate(data.lesson.scheduled_date)}</p>
+              <p style="font-size:.85rem"><strong>Time:</strong> ${fmtTime(data.lesson.scheduled_time)}</p>
+              <p style="font-size:.85rem"><strong>Status:</strong> <span class="badge badge-success">${data.lesson.status || 'Completed'}</span></p>
+            </div>
+            <a href="/student/dashboard.html" class="btn btn-primary" style="margin-top:16px"><i class="fas fa-home"></i> Go to Dashboard</a>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:3rem;margin-bottom:16px">✅</div>
+            <h3 style="color:var(--success)">Attendance Recorded!</h3>
+            <p style="color:var(--gray-500)">Your attendance for this lesson has been marked.</p>
+            <div style="background:var(--gray-50);border-radius:var(--r-sm);padding:16px;margin-top:12px;text-align:left">
+              <p style="font-size:.85rem"><strong>Date:</strong> ${fmtDate(data.lesson.scheduled_date)}</p>
+              <p style="font-size:.85rem"><strong>Time:</strong> ${fmtTime(data.lesson.scheduled_time)}</p>
+              <p style="font-size:.85rem"><strong>Status:</strong> <span class="badge badge-warning">In Progress</span></p>
+            </div>
+            <a href="/student/lessons.html" class="btn btn-primary" style="margin-top:16px"><i class="fas fa-car"></i> View My Lessons</a>
+          </div>
+        `;
+        Toast.success('Attendance recorded successfully!');
+      }
+    } else {
+      // Check if it's a "too early" error
+      if (data.tooEarly) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:3rem;margin-bottom:16px">⏰</div>
+            <h3 style="color:var(--warning)">Too Early!</h3>
+            <p style="color:var(--gray-500)">This QR code is for a lesson on <strong>${fmtDate(data.scheduled_date)}</strong> at <strong>${fmtTime(data.scheduled_time)}</strong>.</p>
+            <p style="color:var(--gray-500);margin-top:8px">Please wait until your lesson time to scan the QR code.</p>
+            <div style="background:rgba(217,119,6,.08);border-radius:var(--r-sm);padding:12px;margin-top:12px;border-left:3px solid var(--warning)">
+              <p style="font-size:.85rem;color:var(--gray-600)"><i class="fas fa-info-circle" style="color:var(--warning)"></i> You can scan this QR code up to 30 minutes before your lesson starts.</p>
+            </div>
+            <a href="/student/lessons.html" class="btn btn-dark" style="margin-top:16px"><i class="fas fa-arrow-left"></i> Back to Lessons</a>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:3rem;margin-bottom:16px">❌</div>
+            <h3 style="color:var(--danger)">QR Code Error</h3>
+            <p style="color:var(--gray-500)">${data.error || 'Invalid QR code. Please ask your instructor for a new one.'}</p>
+            <a href="/student/lessons.html" class="btn btn-dark" style="margin-top:16px"><i class="fas fa-arrow-left"></i> Back to Lessons</a>
+          </div>
+        `;
+      }
+    }
+  } catch(err) {
+    console.error('QR scan error:', err);
+    container.innerHTML = `
+      <div style="text-align:center;padding:20px">
+        <div style="font-size:3rem;margin-bottom:16px">❌</div>
+        <h3 style="color:var(--danger)">Network Error</h3>
+        <p style="color:var(--gray-500)">Failed to process QR code. Please check your connection.</p>
+        <a href="/student/lessons.html" class="btn btn-dark" style="margin-top:16px"><i class="fas fa-arrow-left"></i> Back to Lessons</a>
+      </div>
+    `;
+  }
+}
+
+// ─── Load user info ────────────────────────────────────────
+async function loadUserInfo() {
+  try {
+    const data = await api('/api/student/dashboard');
+    if (!data.success) { 
+      window.location.href = '/auth/login.html'; 
+      return; 
+    }
+    if (data.user) {
+      const initials = data.user.firstName[0] + data.user.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = initials; });
+      ['sb-name','tb-name'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = data.user.firstName + ' ' + data.user.lastName; });
+    }
+  } catch(err) { console.error(err); }
+}
+
+// ─── Initialize ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  loadUserInfo();
+  processQRScan();
+  console.log('✅ QR Scan page initialized!');
+});
+</script>
+</body>
+</html>

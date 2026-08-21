@@ -1,0 +1,36 @@
+# Environment variables (NEVER commit this!)
+.env
+.env.local
+.env.production
+
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Backup files
+*.sql
+*.sql.gz
+
+# Uploads (user uploaded files)
+public/uploads/
+uploads/
+
+# Database files
+*.db
+*.sqlite
+
+# Build files
+dist/
+build/

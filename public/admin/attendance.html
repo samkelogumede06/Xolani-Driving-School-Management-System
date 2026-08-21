@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Attendance — Admin | Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">⚙️ Admin Portal</div></div></div><button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button></div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Overview</div><a href="/admin/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
+    <div class="nav-grp-label">Management</div>
+    <a href="/admin/students.html" class="nav-item"><span class="ni"><i class="fas fa-users"></i></span> Students</a>
+    <a href="/admin/instructors.html" class="nav-item"><span class="ni"><i class="fas fa-chalkboard-teacher"></i></span> Instructors</a>
+    <a href="/admin/vehicles.html" class="nav-item"><span class="ni"><i class="fas fa-car-side"></i></span> Vehicles</a>
+    <a href="/admin/packages.html" class="nav-item"><span class="ni"><i class="fas fa-box"></i></span> Packages</a>
+    <div class="nav-grp-label">Operations</div>
+    <a href="/admin/schedule.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-alt"></i></span> Schedule</a>
+    <a href="/admin/attendance.html" class="nav-item active"><span class="ni"><i class="fas fa-clipboard-check"></i></span> Attendance</a>
+    <a href="/admin/payments.html" class="nav-item"><span class="ni"><i class="fas fa-money-bill-wave"></i></span> Payments</a>
+    <div class="nav-grp-label">Intelligence</div>
+    <a href="/admin/reports.html" class="nav-item"><span class="ni"><i class="fas fa-chart-bar"></i></span> Reports</a>
+    <a href="/admin/ai-insights.html" class="nav-item"><span class="ni"><i class="fas fa-robot"></i></span> AI Insights</a>
+    <a href="/admin/inquiries.html" class="nav-item"><span class="ni"><i class="fas fa-envelope"></i></span> Inquiries</a>
+  </nav>
+  <div class="sidebar-footer"><div class="sb-user"><div class="sb-avatar" id="sb-avatar">AD</div><div><div class="sb-name" id="sb-name">Admin</div><div class="sb-role">Administrator</div></div><a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a></div></div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left"><button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+    <div><div class="pg-title">Attendance Management</div><div class="pg-sub">Track and manage student lesson attendance</div></div></div>
+    <div class="topbar-right">
+      <div class="tb-user-btn" data-dropdown="user-dd"><div class="tb-avatar" id="tb-avatar">AD</div><span class="tb-name" id="tb-name">Admin</span>
+        <div class="dropdown-menu" id="user-dd"><a href="/" class="dropdown-item"><i class="fas fa-globe"></i> View Site</a><a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <!-- DATE + FILTER BAR -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="att-date-prev" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-chevron-left"></i></button>
+          <div>
+            <div style="font-weight:700;color:var(--primary)" id="att-date-display">Today</div>
+            <div style="font-size:.72rem;color:var(--gray-400)" id="att-date-sub"></div>
+          </div>
+          <button id="att-date-next" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)"><i class="fas fa-chevron-right"></i></button>
+          <button id="att-date-today" class="btn btn-sm btn-dark">Today</button>
+        </div>
+        <input type="date" id="att-date-picker" class="form-control" style="width:auto">
+        <select id="att-branch" class="form-control" style="width:auto">
+          <option value="">All Branches</option>
+          <option value="umlazi-v">Umlazi V</option>
+          <option value="umlazi-w">Umlazi W</option>
+        </select>
+        <div style="margin-left:auto;display:flex;gap:16px">
+          <div style="text-align:center"><div style="font-family:var(--ff-head);font-size:1.4rem;font-weight:800;color:var(--success)" id="att-present">—</div><div style="font-size:.7rem;color:var(--gray-400)">Present</div></div>
+          <div style="text-align:center"><div style="font-family:var(--ff-head);font-size:1.4rem;font-weight:800;color:var(--danger)" id="att-absent">—</div><div style="font-size:.7rem;color:var(--gray-400)">Absent</div></div>
+          <div style="text-align:center"><div style="font-family:var(--ff-head);font-size:1.4rem;font-weight:800;color:var(--info)" id="att-scheduled">—</div><div style="font-size:.7rem;color:var(--gray-400)">Scheduled</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-clipboard-check" style="color:var(--accent)"></i> Attendance Register</div>
+        <div style="display:flex;gap:8px">
+          <button id="mark-all-present-btn" class="btn btn-sm btn-success"><i class="fas fa-check-double"></i> Mark All Present</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Student</th>
+              <th>Instructor</th>
+              <th>Lesson Type</th>
+              <th>QR Status</th>
+              <th>Attendance</th>
+              <th>Manual Mark</th>
+            </tr>
+          </thead>
+          <tbody id="att-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:36px"><span class="spinner spinner-dark"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QR SCAN STATS CARD -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header"><div class="card-title">📲 QR Code Scan Activity</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+          <div style="text-align:center;padding:16px;background:var(--gray-50);border-radius:var(--r-sm)">
+            <div style="font-size:2rem;font-weight:800;color:var(--primary);font-family:var(--ff-head)" id="qr-total-scans">—</div>
+            <div style="font-size:.78rem;color:var(--gray-400);margin-top:4px">Total QR Scans Today</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:rgba(22,163,74,.06);border-radius:var(--r-sm)">
+            <div style="font-size:2rem;font-weight:800;color:var(--success);font-family:var(--ff-head)" id="qr-success-scans">—</div>
+            <div style="font-size:.78rem;color:var(--gray-400);margin-top:4px">Successful Scans</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:rgba(15,42,74,.05);border-radius:var(--r-sm)">
+            <div style="font-size:2rem;font-weight:800;color:var(--primary);font-family:var(--ff-head)" id="qr-manual-marks">—</div>
+            <div style="font-size:.78rem;color:var(--gray-400);margin-top:4px">Manual Marks</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:rgba(245,166,35,.06);border-radius:var(--r-sm)">
+            <div style="font-size:2rem;font-weight:800;color:var(--accent);font-family:var(--ff-head)" id="qr-rate">—%</div>
+            <div style="font-size:.78rem;color:var(--gray-400);margin-top:4px">QR Adoption Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let currentDate = new Date().toISOString().split('T')[0];
+let lessonsData = [];
+
+async function loadAttendance() {
+  try {
+    const branch = document.getElementById('att-branch').value;
+    const data = await api(`/api/admin/attendance?date=${currentDate}${branch?'&branch='+branch:''}`);
+    if (!data.success) { window.location.href = '/auth/login.html'; return; }
+    const u = data.user; 
+    if (u && u.firstName && u.lastName) {
+      const init = u.firstName[0]+u.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=init;});
+      ['sb-name','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.firstName+' '+u.lastName;});
+    }
+
+    lessonsData = data.lessons || [];
+    updateDateDisplay();
+    updateStats();
+    renderTable();
+  } catch(err) { console.error(err); }
+}
+
+function updateDateDisplay() {
+  const d = new Date(currentDate+'T00:00:00');
+  const isToday = currentDate === new Date().toISOString().split('T')[0];
+  document.getElementById('att-date-display').textContent = isToday ? 'Today' : d.toLocaleDateString('en-ZA',{weekday:'long'});
+  document.getElementById('att-date-sub').textContent = d.toLocaleDateString('en-ZA',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('att-date-picker').value = currentDate;
+}
+
+function updateStats() {
+  const present = lessonsData.filter(l=>l.status==='completed').length;
+  const absent = lessonsData.filter(l=>l.status==='no_show').length;
+  const scheduled = lessonsData.filter(l=>l.status==='scheduled'||l.status==='in_progress').length;
+  const qrScans = lessonsData.filter(l=>l.attendance_method==='qr').length;
+  const manualMarks = lessonsData.filter(l=>l.attendance_method==='manual').length;
+  document.getElementById('att-present').textContent = present;
+  document.getElementById('att-absent').textContent = absent;
+  document.getElementById('att-scheduled').textContent = scheduled;
+  document.getElementById('qr-total-scans').textContent = qrScans + manualMarks;
+  document.getElementById('qr-success-scans').textContent = qrScans;
+  document.getElementById('qr-manual-marks').textContent = manualMarks;
+  const total = present + absent;
+  document.getElementById('qr-rate').textContent = total > 0 ? Math.round((qrScans/total)*100)+'%' : '—%';
+}
+
+function renderTable() {
+  const tbody = document.getElementById('att-tbody');
+  if (!lessonsData.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="empty-state-icon">📋</div><div class="empty-state-title">No lessons for this date</div></td></tr>';
+    return;
+  }
+  const sColors = {scheduled:'badge-info',completed:'badge-success',no_show:'badge-danger',in_progress:'badge-warning',cancelled:'badge-gray'};
+  tbody.innerHTML = lessonsData.map(l => `
+    <tr id="row-${l.id}">
+      <td style="font-weight:700;color:var(--primary)">${fmtTime(l.scheduled_time)}</td>
+      <td>
+        <div style="font-weight:600">${l.student_name||'—'}</div>
+        <div style="font-size:.72rem;color:var(--gray-400)">${l.student_phone||''}</div>
+      </td>
+      <td style="font-size:.84rem">${l.instructor_name||'—'}</td>
+      <td><span class="badge badge-info">${(l.lesson_type||'').replace('_',' ')}</span></td>
+      <td>
+        ${l.attendance_marked_at
+          ? `<span class="badge badge-success">📲 ${l.attendance_method==='qr'?'QR Scanned':'Manual'}</span>
+             <div style="font-size:.7rem;color:var(--gray-400);margin-top:2px">${fmtDate(l.attendance_marked_at)}</div>`
+          : '<span class="badge badge-gray">⏳ Not marked</span>'}
+      </td>
+      <td><span class="badge ${sColors[l.status]||'badge-gray'}" id="status-badge-${l.id}">${l.status||'—'}</span></td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-success mark-present-btn" data-id="${l.id}" title="Mark Present"><i class="fas fa-check"></i> Present</button>
+          <button class="btn btn-sm btn-danger mark-absent-btn" data-id="${l.id}" title="Mark Absent"><i class="fas fa-times"></i> Absent</button>
+          <button class="btn btn-sm qr-btn" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)" data-id="${l.id}" title="Show QR"><i class="fas fa-qrcode"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ─── Mark Attendance ────────────────────────────────────────
+async function markAttendance(lessonId, status) {
+  const data = await api(`/api/admin/attendance/${lessonId}/mark`, { body: { status } });
+  if (data.success) {
+    Toast.success(`Marked as ${status==='completed'?'present':'absent'}.`);
+    const badge = document.getElementById(`status-badge-${lessonId}`);
+    if (badge) { badge.textContent = status; badge.className = `badge badge-${status==='completed'?'success':'danger'}`; }
+    updateStats();
+  } else Toast.error(data.error);
+}
+
+// ─── Mark All Present ───────────────────────────────────────
+async function markAllPresent() {
+  const scheduled = lessonsData.filter(l=>l.status==='scheduled'||l.status==='in_progress');
+  if (!scheduled.length) { Toast.info('No pending lessons to mark.'); return; }
+  if (!confirm(`Mark all ${scheduled.length} remaining lessons as present?`)) return;
+  let successCount = 0;
+  for (const l of scheduled) {
+    const data = await api(`/api/admin/attendance/${l.id}/mark`, { body: { status: 'completed' } });
+    if (data.success) successCount++;
+  }
+  Toast.success(`Marked ${successCount} lessons present.`);
+  loadAttendance();
+}
+
+// ─── Date navigation ────────────────────────────────────────
+function changeDate(days) { const d = new Date(currentDate); d.setDate(d.getDate()+days); currentDate = d.toISOString().split('T')[0]; loadAttendance(); }
+function goToday() { currentDate = new Date().toISOString().split('T')[0]; loadAttendance(); }
+function setDate(v) { currentDate = v; loadAttendance(); }
+
+// ─── QR Modal ──────────────────────────────────────────────
+function showQR(lessonId) {
+  // Reuse the showQR function from app.js
+  if (typeof window.showQR === 'function') {
+    window.showQR(lessonId);
+  } else {
+    Toast.warning('QR function not available');
+  }
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Load attendance
+  loadAttendance();
+
+  // ─── Date navigation ─────────────────────────────────────
+  document.getElementById('att-date-prev')?.addEventListener('click', function() { changeDate(-1); });
+  document.getElementById('att-date-next')?.addEventListener('click', function() { changeDate(1); });
+  document.getElementById('att-date-today')?.addEventListener('click', goToday);
+  document.getElementById('att-date-picker')?.addEventListener('change', function() { setDate(this.value); });
+  document.getElementById('att-branch')?.addEventListener('change', loadAttendance);
+
+  // ─── Mark All Present ────────────────────────────────────
+  document.getElementById('mark-all-present-btn')?.addEventListener('click', markAllPresent);
+
+  // ─── Mark Present buttons (delegated) ──────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.mark-present-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      markAttendance(id, 'completed');
+    }
+  });
+
+  // ─── Mark Absent buttons (delegated) ───────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.mark-absent-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      markAttendance(id, 'no_show');
+    }
+  });
+
+  // ─── QR buttons (delegated) ────────────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.qr-btn');
+    if (btn) {
+      const id = btn.dataset.id;
+      showQR(id);
+    }
+  });
+
+  console.log('✅ Attendance page initialized!');
+});
+</script>
+</body>
+</html>

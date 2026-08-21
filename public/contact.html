@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Contact Us — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="page-loader" id="page-loader"><div style="text-align:center"><div class="loader-brand">🚗 Xolani Driving School</div><div class="loader-bar"><div class="loader-fill"></div></div></div></div>
+
+<nav class="pub-nav" id="pub-nav">
+  <div class="nav-wrap">
+    <a href="/" class="nav-logo"><div class="nav-logo-icon">X</div><div class="nav-logo-text"><div class="brand-main">Xolani Driving School</div><div class="brand-sub">KwaZulu-Natal</div></div></a>
+    <div class="nav-links"><a href="/">Home</a><a href="/about.html">About</a><a href="/pricing.html">Pricing</a><a href="/contact.html" class="active">Contact</a></div>
+    <div class="nav-cta"><a href="/auth/login.html" class="btn-nav-login">Login</a><a href="/auth/register.html" class="btn-nav-reg">Register Free</a></div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mob-menu" id="mob-menu">
+  <a href="/">🏠 Home</a><a href="/about.html">👥 About Us</a><a href="/pricing.html">💰 Pricing</a><a href="/contact.html">📍 Contact</a>
+  <div class="mob-cta"><a href="/auth/login.html" class="btn btn-outline btn-block">Login</a><a href="/auth/register.html" class="btn btn-primary btn-block">Register Free</a></div>
+</div>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="hero-badge" style="justify-content:center;margin-bottom:14px"><span class="hero-badge-dot"></span> We Respond Within 24 Hours</div>
+    <h1 class="page-hero-title">Get In Touch</h1>
+    <p class="page-hero-sub">Have a question? Ready to enrol? We're here to help at both our Umlazi V and Umlazi W branches.</p>
+  </div>
+</div>
+
+<!-- CONTACT MAIN -->
+<section class="section" style="background:#fff">
+  <div class="container">
+    <div class="contact-grid">
+      <!-- FORM -->
+      <div>
+        <h3 style="color:var(--primary);font-size:1.3rem;margin-bottom:6px">Send Us a Message</h3>
+        <p style="color:var(--gray-500);font-size:.88rem;margin-bottom:24px">Fill in the form and a team member will respond within 24 hours (usually much faster!)</p>
+        <form id="contact-form">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Full Name <span class="req">*</span></label><input type="text" name="name" class="form-control" placeholder="e.g. Sipho Nkosi" required></div>
+            <div class="form-group"><label class="form-label">Email Address <span class="req">*</span></label><input type="email" name="email" class="form-control" placeholder="you@example.com" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" name="phone" class="form-control" placeholder="+27 8X XXX XXXX"></div>
+            <div class="form-group">
+              <label class="form-label">Preferred Branch</label>
+              <select name="branch" class="form-control">
+                <option value="">— Select Branch —</option>
+                <option value="umlazi-v">Umlazi V Main Branch</option>
+                <option value="umlazi-w">Umlazi W</option>
+                <option value="either">Either Branch</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <select name="subject" class="form-control">
+              <option value="">— Select a Topic —</option>
+              <option>General Enquiry</option>
+              <option>Package & Pricing</option>
+              <option>Lesson Booking</option>
+              <option>Complaint / Feedback</option>
+              <option>Partnership / Business</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Message <span class="req">*</span></label><textarea name="message" class="form-control" rows="5" placeholder="Tell us how we can help you..." required></textarea></div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg"><i class="fas fa-paper-plane"></i> Send Message</button>
+        </form>
+      </div>
+
+      <!-- CONTACT INFO -->
+      <div>
+        <!-- Branch 1 -->
+        <div style="background:var(--gray-50);border-radius:var(--r-lg);padding:28px;margin-bottom:20px;border:1px solid var(--gray-100)">
+          <h4 style="color:var(--primary);margin-bottom:18px;display:flex;align-items:center;gap:8px"><i class="fas fa-building" style="color:var(--accent)"></i> Umlazi V Main Branch</h4>
+          <div class="contact-info-block">
+            <div class="c-icon"><i class="fas fa-map-marker-alt" style="color:var(--accent)"></i></div>
+            <div>
+              <div class="c-label">Address</div>
+              <div class="c-val">Griffiths Mxenge Highway, Umlazi V<br>Durban, 4066</div>
+              <a href="https://maps.app.goo.gl/P85gj9g5FwhCgdAn7" target="_blank" style="display:inline-flex;align-items:center;gap:5px;color:var(--primary);font-size:.8rem;font-weight:600;margin-top:6px;border-bottom:1px solid var(--accent)"><i class="fas fa-directions"></i> Open in Google Maps</a>
+            </div>
+          </div>
+          <div class="contact-info-block">
+            <div class="c-icon"><i class="fas fa-phone" style="color:var(--accent)"></i></div>
+            <div><div class="c-label">Phone</div><div class="c-val"><a href="tel:+27795925530" style="color:var(--primary)">+27 79 592 5530</a></div></div>
+          </div>
+          <div class="contact-info-block">
+            <div class="c-icon"><i class="fas fa-envelope" style="color:var(--accent)"></i></div>
+            <div><div class="c-label">Email</div><div class="c-val"><a href="mailto:xolanidrivingschool@gmail.com" style="color:var(--primary)">xolanidrivingschool@gmail.com</a></div></div>
+          </div>
+        </div>
+
+        <!-- Branch 2 -->
+        <div style="background:var(--gray-50);border-radius:var(--r-lg);padding:28px;margin-bottom:20px;border:1px solid var(--gray-100)">
+          <h4 style="color:var(--primary);margin-bottom:18px;display:flex;align-items:center;gap:8px"><i class="fas fa-building" style="color:var(--accent)"></i> Umlazi W Branch</h4>
+          <div class="contact-info-block">
+            <div class="c-icon"><i class="fas fa-map-marker-alt" style="color:var(--accent)"></i></div>
+            <div>
+              <div class="c-label">Address</div>
+              <div class="c-val">Shop 14, Edamini Centre<br>Umlazi W, 4066</div>
+              <a href="https://maps.app.goo.gl/ECA12mgc6AZ8rHgM8" target="_blank" style="display:inline-flex;align-items:center;gap:5px;color:var(--primary);font-size:.8rem;font-weight:600;margin-top:6px;border-bottom:1px solid var(--accent)"><i class="fas fa-directions"></i> Open in Google Maps</a>
+            </div>
+          </div>
+          <div class="contact-info-block">
+            <div class="c-icon"><i class="fas fa-phone" style="color:var(--accent)"></i></div>
+            <div><div class="c-label">Phone</div><div class="c-val"><a href="tel:+27733333770" style="color:var(--primary)">+27 73 333 3770</a></div></div>
+          </div>
+          <div class="contact-info-block">
+            <div class="c-icon"><i class="fas fa-envelope" style="color:var(--accent)"></i></div>
+            <div><div class="c-label">Email</div><div class="c-val"><a href="mailto:xolanidrivingschool@gmail.com" style="color:var(--primary)">xolanidrivingschool@gmail.com</a></div></div>
+          </div>
+        </div>
+
+        <!-- Operating Hours -->
+        <div style="background:var(--primary);border-radius:var(--r-lg);padding:24px;color:#fff">
+          <h4 style="margin-bottom:16px;display:flex;align-items:center;gap:8px"><i class="fas fa-clock" style="color:var(--accent)"></i> Operating Hours</h4>
+          <table class="hours-table" style="color:rgba(255,255,255,.85)">
+            <tr><td>Monday – Friday</td><td style="color:var(--accent)">7:00 AM – 6:00 PM</td></tr>
+            <tr><td>Saturday</td><td style="color:var(--accent)">7:00 AM – 6:00 PM</td></tr>
+            <tr><td>Sunday</td><td style="color:rgba(255,255,255,.4)">Closed</td></tr>
+            <tr><td>Public Holidays</td><td style="color:rgba(255,255,255,.4)">Closed</td></tr>
+          </table>
+          <p style="font-size:.78rem;opacity:.55;margin-top:12px">Emergency lesson cancellations: WhatsApp only.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAPS EMBED -->
+<section style="background:var(--gray-50);padding:40px 0">
+  <div class="container">
+    <div class="section-header" style="margin-bottom:28px">
+      <div class="section-label">Find Us</div>
+      <h2 class="section-title">Our Locations on the Map</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="font-weight:700;color:var(--primary);margin-bottom:8px;font-size:.9rem">📍 Umlazi V (Main Office)</div>
+        <iframe src="https://maps.google.com/maps?q=Griffiths+Mxenge+Highway+Umlazi+V+Durban+KwaZulu-Natal&t=&z=14&ie=UTF8&iwloc=&output=embed" width="100%" height="280" style="border:0;border-radius:var(--r);box-shadow:var(--sh)" allowfullscreen loading="lazy"></iframe>
+        <a href="https://maps.app.goo.gl/P85gj9g5FwhCgdAn7" target="_blank" class="btn btn-dark btn-block btn-sm" style="margin-top:8px"><i class="fas fa-directions"></i> Get Directions</a>
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--primary);margin-bottom:8px;font-size:.9rem">📍 Umlazi W </div>
+        <iframe src="https://maps.google.com/maps?q=Umlazi+W+Durban+KwaZulu-Natal&t=&z=14&ie=UTF8&iwloc=&output=embed" width="100%" height="280" style="border:0;border-radius:var(--r);box-shadow:var(--sh)" allowfullscreen loading="lazy"></iframe>
+        <a href="https://maps.app.goo.gl/ECA12mgc6AZ8rHgM8" target="_blank" class="btn btn-dark btn-block btn-sm" style="margin-top:8px"><i class="fas fa-directions"></i> Get Directions</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div><div class="nav-logo" style="margin-bottom:0"><div class="nav-logo-icon">X</div><div class="nav-logo-text"><div class="brand-main" style="color:#fff">Xolani Driving School</div><div class="brand-sub">KwaZulu-Natal</div></div></div><p class="footer-desc">Empowering confident, safe drivers across KwaZulu-Natal since 2012.</p><div class="footer-social"><a href="#" class="social-ico"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-ico"><i class="fab fa-instagram"></i></a><a href="#" class="social-ico"><i class="fab fa-whatsapp"></i></a></div></div>
+      <div><div class="footer-col-title">Quick Links</div><div class="footer-links"><a href="/">Home</a><a href="/about.html">About Us</a><a href="/pricing.html">Pricing</a><a href="/contact.html">Contact</a></div></div>
+      <div><div class="footer-col-title">Services</div><div class="footer-links"><a href="/pricing.html">Code 8 Training</a><a href="/pricing.html">Yard Test Prep</a><a href="/pricing.html">Refresher Courses</a></div></div>
+      <div><div class="footer-col-title">Contact</div><div class="footer-contact-row"><i class="fas fa-phone"></i><span>+27 79 592 5530</span></div><div class="footer-contact-row"><i class="fas fa-envelope"></i><span>xolanidrivingschool@gmail.com</span></div></div>
+    </div>
+    <hr class="footer-divider"><div class="footer-bottom"><span>© 2026 Xolani Driving School. All rights reserved.</span><!--<span style="color:rgba(255,255,255,.3)">🇿🇦 KwaZulu-Natal</span> --></div>
+  </div>
+</footer>
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('[type=submit]');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending…';
+  try {
+    const fd = new FormData(this);
+    const res = await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.fromEntries(fd)) });
+    const data = await res.json();
+    if (data.success) { Toast.success('Message sent! We\'ll get back to you shortly.'); this.reset(); }
+    else Toast.error(data.error || 'Failed to send. Please try again or call us directly.');
+  } catch { Toast.error('Network error. Please call us directly.'); }
+  finally { btn.disabled = false; btn.innerHTML = orig; }
+});
+</script>
+</body>
+</html>

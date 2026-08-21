@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Book a Lesson — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dash-layout">
+<div class="sidebar-overlay" id="sb-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">X</div><div><div class="sidebar-brand">Xolani DS</div><div class="sidebar-role">🎓 Student Portal</div></div></div>
+    <button class="sidebar-close-btn" id="sb-close"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-grp-label">Main</div>
+    <a href="/student/dashboard.html" class="nav-item"><span class="ni"><i class="fas fa-home"></i></span> Dashboard</a>
+    <a href="/student/lessons.html" class="nav-item"><span class="ni"><i class="fas fa-car"></i></span> My Lessons</a>
+    <a href="/student/book-lesson.html" class="nav-item active"><span class="ni"><i class="fas fa-calendar-plus"></i></span> Book Lesson</a>
+    <a href="/student/attendance.html" class="nav-item"><span class="ni"><i class="fas fa-calendar-check"></i></span> Attendance</a>
+    <a href="/student/progress.html" class="nav-item"><span class="ni"><i class="fas fa-chart-line"></i></span> My Progress</a>
+    <div class="nav-grp-label">Account</div>
+    <a href="/student/payments.html" class="nav-item"><span class="ni"><i class="fas fa-credit-card"></i></span> Payments</a>
+    <a href="/student/notifications.html" class="nav-item"><span class="ni"><i class="fas fa-bell"></i></span> Notifications <span class="nav-badge notif-badge" style="display:none">0</span></a>
+    <a href="/student/profile.html" class="nav-item"><span class="ni"><i class="fas fa-user"></i></span> My Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">ST</div>
+      <div><div class="sb-name" id="sb-name">Student</div><div class="sb-role">Student</div></div>
+      <a href="/auth/login.html" class="sb-logout"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+  </div>
+</aside>
+
+<div class="dash-main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sb-toggle" id="sb-toggle"><i class="fas fa-bars"></i></button>
+      <div><div class="pg-title">Book a Lesson</div><div class="pg-sub">Schedule your next driving lesson</div></div>
+    </div>
+    <div class="topbar-right">
+      <a href="/student/notifications.html" class="tb-action"><i class="fas fa-bell"></i><span class="notif-dot notif-badge" style="display:none">0</span></a>
+      <div class="tb-user-btn" data-dropdown="user-dd">
+        <div class="tb-avatar" id="tb-avatar">ST</div>
+        <span class="tb-name" id="tb-name">Student</span>
+        <div class="dropdown-menu" id="user-dd">
+          <a href="/student/profile.html" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
+          <a href="/auth/login.html" class="dropdown-item danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-calendar-plus" style="color:var(--accent)"></i> Schedule Your Lesson</div>
+      </div>
+      <div class="card-body">
+        <div id="booking-error" class="alert alert-error" style="display:none"></div>
+        <div id="booking-success" class="alert alert-success" style="display:none"></div>
+
+        <form id="booking-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Branch <span class="req">*</span></label>
+              <select name="branch_id" id="branch-select" class="form-control" required>
+                <option value="">— Select Branch —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instructor <span class="req">*</span></label>
+              <select name="instructor_id" id="instructor-select" class="form-control" required>
+                <option value="">— Select Branch First —</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Lesson Type <span class="req">*</span></label>
+              <select name="lesson_type" id="lesson-type" class="form-control" required>
+                <option value="practical">Practical</option>
+                <option value="theory">Theory</option>
+                <option value="yard_test">Yard Test</option>
+                <option value="road_test">Road Test</option>
+                <option value="observation">Observation</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Duration <span class="req">*</span></label>
+              <select name="duration_minutes" id="duration-select" class="form-control" required>
+                <option value="30">30 minutes</option>
+                <option value="60" selected>60 minutes</option>
+                <option value="90">90 minutes</option>
+                <option value="120">120 minutes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date <span class="req">*</span></label>
+              <input type="date" name="scheduled_date" id="date-picker" class="form-control" required>
+              <div id="date-hint" style="font-size:.72rem;color:var(--gray-400);margin-top:4px"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time <span class="req">*</span></label>
+              <input type="time" name="scheduled_time" id="time-picker" class="form-control" required step="1800">
+              <div id="time-hint" style="font-size:.72rem;color:var(--gray-400);margin-top:4px">Available: 07:00 – 18:00 (30 min intervals)</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Vehicle (Optional)</label>
+            <select name="vehicle_id" id="vehicle-select" class="form-control">
+              <option value="">— No preference —</option>
+            </select>
+          </div>
+
+          <div style="background:var(--gray-50);border-radius:var(--r-sm);padding:14px;margin:12px 0;border:1px solid var(--gray-100)">
+            <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--gray-500)">
+                <i class="fas fa-clock" style="color:var(--accent)"></i>
+                <strong>Operating Hours:</strong>
+              </div>
+              <span style="font-size:.76rem;color:var(--gray-500)">Mon-Fri: 7:00 AM – 6:00 PM</span>
+              <span style="font-size:.76rem;color:var(--gray-500)">Sat: 7:00 AM – 6:00 PM</span>
+              <span style="font-size:.76rem;color:var(--danger)">Sun & Public Holidays: Closed</span>
+            </div>
+          </div>
+
+          <div style="background:rgba(245,166,35,.08);border-radius:var(--r-sm);padding:12px;margin:12px 0;border-left:3px solid var(--accent)">
+            <p style="font-size:.82rem;color:var(--gray-600);margin:0">
+              <i class="fas fa-qrcode" style="color:var(--accent)"></i>
+              <strong>QR Code:</strong> Your instructor will provide the QR code at the branch. You must be physically present to scan it.
+            </p>
+          </div>
+
+          <button type="submit" id="book-btn" class="btn btn-primary btn-block btn-lg">
+            <i class="fas fa-calendar-check"></i> Book Lesson
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-clock" style="color:var(--accent)"></i> Your Upcoming Lessons</div>
+        <a href="/student/lessons.html" class="btn btn-sm" style="background:var(--gray-50);border:1px solid var(--gray-200);color:var(--primary)">View All</a>
+      </div>
+      <div id="upcoming-lessons">
+        <div style="padding:28px;text-align:center;color:var(--gray-400)"><span class="spinner spinner-dark"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+let upcomingLessons = [];
+
+// ─── Public Holidays (YYYY-MM-DD) ─────────────────────────
+function isPublicHoliday(dateStr) {
+  const publicHolidays = [
+    '2026-01-01', '2026-03-21', '2026-04-03', '2026-04-06',
+    '2026-04-27', '2026-05-01', '2026-06-16', '2026-08-10',
+    '2026-09-24', '2026-12-16', '2026-12-25', '2026-12-26'
+  ];
+  return publicHolidays.includes(dateStr);
+}
+
+// ─── Check if date is a Sunday ─────────────────────────────
+function isSunday(dateStr) {
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.getDay() === 0;
+}
+
+// ─── Check if a date is bookable ──────────────────────────
+function isBookableDate(dateStr) {
+  if (isSunday(dateStr)) return { bookable: false, reason: 'Branch is closed on Sundays.' };
+  if (isPublicHoliday(dateStr)) return { bookable: false, reason: 'Branch is closed on public holidays.' };
+  return { bookable: true };
+}
+
+// ─── Load User Info ────────────────────────────────────────
+async function loadUserInfo() {
+  try {
+    const data = await api('/api/student/dashboard');
+    if (!data.success) { 
+      console.error('Failed to load user info');
+      return;
+    }
+    if (data.user) {
+      const initials = data.user.firstName[0] + data.user.lastName[0];
+      ['sb-avatar','tb-avatar'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = initials; });
+      ['sb-name','tb-name'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = data.user.firstName + ' ' + data.user.lastName; });
+    }
+  } catch(err) { console.error(err); }
+}
+
+// ─── Load Branches ─────────────────────────────────────────
+async function loadBranches() {
+  try {
+    const res = await fetch('/api/admin/branches');
+    const data = await res.json();
+    const select = document.getElementById('branch-select');
+    if (data.success && data.branches?.length) {
+      select.innerHTML = '<option value="">— Select Branch —</option>';
+      data.branches.forEach(b => {
+        const option = document.createElement('option');
+        option.value = b.id;
+        option.textContent = b.name;
+        select.appendChild(option);
+      });
+    }
+  } catch(err) {
+    console.error('Error loading branches:', err);
+  }
+}
+
+// ─── Load Available Instructors ────────────────────────────
+async function loadInstructors(branchId, date, time) {
+  const select = document.getElementById('instructor-select');
+  select.innerHTML = '<option value="">— Loading instructors… —</option>';
+  
+  if (!branchId) {
+    select.innerHTML = '<option value="">— Select Branch First —</option>';
+    return;
+  }
+
+  try {
+    let url = `/api/student/available-instructors?branch_id=${branchId}`;
+    if (date) url += `&date=${date}`;
+    if (time) url += `&time=${time}`;
+    
+    const data = await api(url);
+    
+    if (data.success === false) {
+      console.error('Error loading instructors:', data.error);
+      select.innerHTML = `<option value="">— ${data.error || 'Error loading instructors'} —</option>`;
+      return;
+    }
+    
+    if (data.instructors && data.instructors.length > 0) {
+      select.innerHTML = '<option value="">— Select Instructor —</option>';
+      data.instructors.forEach(i => {
+        const option = document.createElement('option');
+        option.value = i.id;
+        option.textContent = i.name + (i.years_experience ? ` (${i.years_experience} yrs)` : '');
+        select.appendChild(option);
+      });
+    } else {
+      select.innerHTML = '<option value="">— No instructors available —</option>';
+    }
+  } catch(err) {
+    console.error('Error loading instructors:', err);
+    select.innerHTML = '<option value="">— Error loading instructors —</option>';
+  }
+}
+
+// ─── Load Available Vehicles ──────────────────────────────
+async function loadVehicles(branchId) {
+  const select = document.getElementById('vehicle-select');
+  if (!branchId) {
+    select.innerHTML = '<option value="">— Select Branch First —</option>';
+    return;
+  }
+
+  try {
+    const data = await api(`/api/vehicles/public?branch_id=${branchId}`);
+    if (data.success && data.vehicles?.length) {
+      select.innerHTML = '<option value="">— No preference —</option>';
+      data.vehicles.forEach(v => {
+        const option = document.createElement('option');
+        option.value = v.id;
+        option.textContent = `${v.make} ${v.model} (${v.registration_number})`;
+        select.appendChild(option);
+      });
+    } else {
+      select.innerHTML = '<option value="">— No vehicles available —</option>';
+    }
+  } catch(err) {
+    console.error('Error loading vehicles:', err);
+    select.innerHTML = '<option value="">— Error loading vehicles —</option>';
+  }
+}
+
+// ─── Load Upcoming Lessons ─────────────────────────────────
+async function loadUpcomingLessons() {
+  const container = document.getElementById('upcoming-lessons');
+  try {
+    const data = await api('/api/student/lessons');
+    if (!data.success) return;
+    
+    upcomingLessons = (data.lessons || [])
+      .filter(l => l.status === 'scheduled')
+      .sort((a, b) => new Date(a.scheduled_date + 'T' + a.scheduled_time) - new Date(b.scheduled_date + 'T' + b.scheduled_time))
+      .slice(0, 5);
+    
+    if (upcomingLessons.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:28px">
+          <div class="empty-state-icon">📅</div>
+          <div class="empty-state-title">No upcoming lessons</div>
+          <div class="empty-state-desc">Book your first lesson using the form above!</div>
+        </div>`;
+      return;
+    }
+    
+    container.innerHTML = upcomingLessons.map(l => `
+      <div style="padding:12px 18px;border-bottom:1px solid var(--gray-50);display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:600;color:var(--primary)">${fmtDate(l.scheduled_date)}</div>
+          <div style="font-size:.78rem;color:var(--gray-400)">${fmtTime(l.scheduled_time)} · ${l.duration_minutes || 60} min</div>
+        </div>
+        <div>
+          <span class="badge badge-info">${(l.lesson_type||'').replace('_',' ')}</span>
+          <span style="font-size:.78rem;color:var(--gray-500);margin-left:8px">${l.instructor_name || 'TBA'}</span>
+        </div>
+        <div style="font-size:.74rem;color:var(--gray-400)">
+          <i class="fas fa-qrcode" style="color:var(--accent)"></i> Scan at branch
+        </div>
+      </div>
+    `).join('');
+  } catch(err) {
+    container.innerHTML = '<div style="padding:28px;text-align:center;color:var(--gray-400)">Failed to load upcoming lessons.</div>';
+  }
+}
+
+// ─── ⭐ Get Minimum Allowed Time for Today ─────────────────
+function getMinAllowedTime() {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  
+  // Round up to next 30-minute interval
+  let minHour = currentHour;
+  let minMinute = 0;
+  
+  if (currentMinute > 30) {
+    minHour = currentHour + 1;
+    minMinute = 0;
+  } else if (currentMinute > 0 && currentMinute <= 30) {
+    minMinute = 30;
+  } else {
+    minMinute = 0;
+  }
+  
+  // If it's past 18:00, no times available today
+  if (minHour >= 18) {
+    return null;
+  }
+  
+  // Pad with leading zeros
+  return `${String(minHour).padStart(2, '0')}:${String(minMinute).padStart(2, '0')}`;
+}
+
+// ─── ⭐ Check if time is valid for today ────────────────────
+function isTimeValidForToday(selectedDate, selectedTime) {
+  const today = new Date().toISOString().split('T')[0];
+  
+  // If not today, all times are valid (within operating hours)
+  if (selectedDate !== today) {
+    return { valid: true };
+  }
+  
+  const now = new Date();
+  const [hour, minute] = selectedTime.split(':').map(Number);
+  const selectedMinutes = hour * 60 + minute;
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  
+  // Allow 30-minute buffer for booking (can book current or future time slots)
+  // If current time is 11:15, allow booking 11:30 (rounded up)
+  const minAllowedMinutes = Math.ceil(currentMinutes / 30) * 30;
+  
+  if (selectedMinutes < minAllowedMinutes) {
+    const minTime = getMinAllowedTime();
+    return { 
+      valid: false, 
+      reason: `The earliest available time today is ${minTime}. Please select a later time.` 
+    };
+  }
+  
+  return { valid: true };
+}
+
+// ─── Update Date Picker Restrictions ──────────────────────
+function updateDateRestrictions() {
+  const datePicker = document.getElementById('date-picker');
+  const hint = document.getElementById('date-hint');
+  const today = new Date();
+  
+  // ⭐ FIX: Allow booking today
+  const todayStr = today.toISOString().split('T')[0];
+  datePicker.min = todayStr;
+  
+  const maxDate = new Date(today);
+  maxDate.setDate(maxDate.getDate() + 30);
+  datePicker.max = maxDate.toISOString().split('T')[0];
+  
+  // Set default date to today
+  datePicker.value = todayStr;
+  
+  // ⭐ Update time picker restrictions when date changes
+  datePicker.addEventListener('change', function() {
+    const selectedDate = this.value;
+    if (!selectedDate) return;
+    
+    const check = isBookableDate(selectedDate);
+    if (!check.bookable) {
+      hint.textContent = '❌ ' + check.reason;
+      hint.style.color = 'var(--danger)';
+      this.classList.add('is-invalid');
+      this.value = '';
+      // Reset time picker hint
+      document.getElementById('time-hint').textContent = 'Please select a valid date first.';
+      document.getElementById('time-hint').style.color = 'var(--gray-400)';
+      return;
+    } else {
+      hint.textContent = '✅ ' + getDayName(selectedDate);
+      hint.style.color = 'var(--success)';
+      this.classList.remove('is-invalid');
+      
+      // ⭐ Update time picker based on selected date
+      updateTimeRestrictions(selectedDate);
+      
+      const branchId = document.getElementById('branch-select').value;
+      const time = document.getElementById('time-picker').value;
+      if (branchId) {
+        loadInstructors(branchId, selectedDate, time);
+      }
+    }
+  });
+}
+
+// ─── ⭐ Update Time Picker Restrictions ─────────────────────
+function updateTimeRestrictions(selectedDate) {
+  const timePicker = document.getElementById('time-picker');
+  const timeHint = document.getElementById('time-hint');
+  const today = new Date().toISOString().split('T')[0];
+  const duration = parseInt(document.getElementById('duration-select').value) || 60;
+  
+  if (selectedDate === today) {
+    const minTime = getMinAllowedTime();
+    if (minTime) {
+      timePicker.min = minTime;
+      // Set default time to earliest available if current time is before 07:00
+      const currentHour = new Date().getHours();
+      if (currentHour < 7) {
+        timePicker.value = '07:00';
+      } else if (minTime) {
+        timePicker.value = minTime;
+      }
+      timeHint.textContent = `Today's earliest available time: ${minTime} (30 min intervals)`;
+      timeHint.style.color = 'var(--info)';
+    } else {
+      timePicker.min = '07:00';
+      timePicker.value = '07:00';
+      timeHint.textContent = '⚠️ No more time slots available today. Please select another date.';
+      timeHint.style.color = 'var(--danger)';
+    }
+  } else {
+    // For future dates, allow full operating hours
+    timePicker.min = '07:00';
+    timePicker.value = '07:00';
+    timeHint.textContent = 'Available: 07:00 – 18:00 (30 min intervals)';
+    timeHint.style.color = 'var(--gray-400)';
+  }
+  
+  // ⭐ Check if time is valid when time changes
+  timePicker.addEventListener('change', function() {
+    const selectedTime = this.value;
+    const selectedDate = document.getElementById('date-picker').value;
+    if (!selectedDate || !selectedTime) return;
+    
+    const timeCheck = isTimeValidForToday(selectedDate, selectedTime);
+    if (!timeCheck.valid) {
+      timeHint.textContent = '⚠️ ' + timeCheck.reason;
+      timeHint.style.color = 'var(--danger)';
+      this.classList.add('is-invalid');
+    } else {
+      timeHint.textContent = '✅ Selected time is available.';
+      timeHint.style.color = 'var(--success)';
+      this.classList.remove('is-invalid');
+    }
+    
+    // Update end time hint
+    updateEndTimeHint();
+  });
+}
+
+// ─── ⭐ Update End Time Hint ─────────────────────────────────
+function updateEndTimeHint() {
+  const timePicker = document.getElementById('time-picker');
+  const duration = parseInt(document.getElementById('duration-select').value) || 60;
+  const timeHint = document.getElementById('time-hint');
+  const timeValue = timePicker.value;
+  
+  if (!timeValue) return;
+  
+  const [hour, minute] = timeValue.split(':').map(Number);
+  const endMinutes = hour * 60 + minute + duration;
+  const endHour = Math.floor(endMinutes / 60);
+  const endMinute = endMinutes % 60;
+  
+  // Only update if the current message is a success/availability message
+  if (timeHint.textContent.includes('✅') || timeHint.textContent.includes('Selected time is available')) {
+    const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+    timeHint.textContent = `✅ Selected time is available. Ends at ${endTimeStr}.`;
+  }
+}
+
+// ─── Get Day Name ──────────────────────────────────────────
+function getDayName(dateStr) {
+  const date = new Date(dateStr + 'T00:00:00');
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[date.getDay()];
+}
+
+// ─── Handle Form Submission ─────────────────────────────────
+async function handleBooking(e) {
+  e.preventDefault();
+  
+  const errorEl = document.getElementById('booking-error');
+  const successEl = document.getElementById('booking-success');
+  const btn = document.getElementById('book-btn');
+  const datePicker = document.getElementById('date-picker');
+  const timePicker = document.getElementById('time-picker');
+  
+  errorEl.style.display = 'none';
+  successEl.style.display = 'none';
+  
+  const form = document.getElementById('booking-form');
+  const fd = new FormData(form);
+  const body = Object.fromEntries(fd);
+  
+  if (!body.branch_id || !body.instructor_id || !body.scheduled_date || !body.scheduled_time) {
+    errorEl.textContent = 'Please fill in all required fields.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  const dateCheck = isBookableDate(body.scheduled_date);
+  if (!dateCheck.bookable) {
+    errorEl.textContent = dateCheck.reason;
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  // ⭐ Check if time is valid for today
+  const timeCheck = isTimeValidForToday(body.scheduled_date, body.scheduled_time);
+  if (!timeCheck.valid) {
+    errorEl.textContent = timeCheck.reason;
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  const hour = parseInt(body.scheduled_time.split(':')[0]);
+  const minute = parseInt(body.scheduled_time.split(':')[1]);
+  const duration = parseInt(body.duration_minutes) || 60;
+  
+  if (hour < 7 || hour >= 18) {
+    errorEl.textContent = 'Lesson time must be between 7:00 AM and 6:00 PM.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  const endMinutes = hour * 60 + minute + duration;
+  const endHour = Math.floor(endMinutes / 60);
+  const endMinute = endMinutes % 60;
+  
+  if (endHour > 18 || (endHour === 18 && endMinute > 0)) {
+    errorEl.textContent = `This lesson would end at ${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}. Lessons must end by 6:00 PM.`;
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Booking…';
+  
+  try {
+    const data = await api('/api/student/schedule', { method: 'POST', body });
+    
+    if (data.success) {
+      successEl.textContent = data.message || 'Lesson booked successfully!';
+      successEl.style.display = 'block';
+      form.reset();
+      loadUpcomingLessons();
+      
+      document.getElementById('instructor-select').innerHTML = '<option value="">— Select Branch First —</option>';
+      document.getElementById('vehicle-select').innerHTML = '<option value="">— No preference —</option>';
+      document.getElementById('branch-select').value = '';
+      document.getElementById('date-hint').textContent = '';
+      
+      // ⭐ Reset date picker to today
+      const today = new Date().toISOString().split('T')[0];
+      datePicker.value = today;
+      timePicker.value = '08:00';
+      updateTimeRestrictions(today);
+    } else {
+      errorEl.textContent = data.error || 'Failed to book lesson. Please try again.';
+      errorEl.style.display = 'block';
+    }
+  } catch(err) {
+    errorEl.textContent = 'Network error. Please check your connection.';
+    errorEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-calendar-check"></i> Book Lesson';
+  }
+}
+
+// ─── Event Listeners ───────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  loadUserInfo();
+  loadBranches();
+  loadUpcomingLessons();
+  
+  // ⭐ Initialize date picker restrictions
+  updateDateRestrictions();
+  
+  // ⭐ Set default time
+  const today = new Date().toISOString().split('T')[0];
+  updateTimeRestrictions(today);
+  
+  // ⭐ Branch change → load vehicles + instructors
+  document.getElementById('branch-select').addEventListener('change', function() {
+    const branchId = this.value;
+    const date = document.getElementById('date-picker').value;
+    const time = document.getElementById('time-picker').value;
+    
+    loadVehicles(branchId);
+    if (branchId) {
+      loadInstructors(branchId, date, time);
+    } else {
+      document.getElementById('instructor-select').innerHTML = '<option value="">— Select Branch First —</option>';
+    }
+  });
+  
+  // ⭐ Date change → reload instructors and update time
+  document.getElementById('date-picker').addEventListener('change', function() {
+    const branchId = document.getElementById('branch-select').value;
+    const time = document.getElementById('time-picker').value;
+    if (branchId && this.value) {
+      const check = isBookableDate(this.value);
+      if (check.bookable) {
+        updateTimeRestrictions(this.value);
+        loadInstructors(branchId, this.value, time);
+      }
+    }
+  });
+  
+  // ⭐ Time change → reload instructors and update end time
+  document.getElementById('time-picker').addEventListener('change', function() {
+    const branchId = document.getElementById('branch-select').value;
+    const date = document.getElementById('date-picker').value;
+    if (branchId && date && this.value) {
+      loadInstructors(branchId, date, this.value);
+      updateEndTimeHint();
+    }
+  });
+  
+  // ⭐ Duration change → update end time hint
+  document.getElementById('duration-select').addEventListener('change', function() {
+    updateEndTimeHint();
+  });
+  
+  // Form submission
+  document.getElementById('booking-form').addEventListener('submit', handleBooking);
+  
+  console.log('✅ Book Lesson page initialized!');
+});
+</script>
+</body>
+</html>

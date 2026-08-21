@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Login — Xolani Driving School</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="auth-layout">
+  <!-- LEFT PANEL -->
+  <div class="auth-left">
+    <a href="/" class="nav-logo" style="margin-bottom:auto">
+      <div class="nav-logo-icon">X</div>
+      <div class="nav-logo-text"><div class="brand-main" style="color:#fff">Xolani Driving School</div><div class="brand-sub">KwaZulu-Natal</div></div>
+    </a>
+    <div style="position:relative;z-index:2;margin:48px 0">
+      <div style="font-size:3.5rem;margin-bottom:20px">🚗</div>
+      <h2 style="color:#fff;font-size:1.8rem;margin-bottom:12px">Welcome back!<br>Ready to drive?</h2>
+      <p style="color:rgba(255,255,255,.65);font-size:.92rem;line-height:1.7">Log in to access your lessons, track your AI readiness score, view attendance history, and manage your entire driving journey from one place.</p>
+    </div>
+    <div class="auth-stats">
+      <div><div class="auth-stat-num">2,400+</div><div class="auth-stat-lbl">Graduates</div></div>
+      <div><div class="auth-stat-num">94%</div><div class="auth-stat-lbl">Pass Rate</div></div>
+      <div><div class="auth-stat-num">12 Yrs</div><div class="auth-stat-lbl">Experience</div></div>
+    </div>
+    <div class="auth-quote-wrap" style="margin-top:32px">
+      <p class="auth-quote">"Passed first time! The AI score showed I was 91% ready. Booked the test and nailed it."</p>
+      <div class="auth-quote-author">— Sipho Mthembu, Umlazi W · 2024</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <h1 class="auth-title">Sign In</h1>
+      <p class="auth-sub">Enter your credentials to access your student portal.</p>
+
+      <!-- ⭐ ERROR DISPLAY -->
+      <div id="login-error" style="display:none;background:rgba(220,38,38,.08);color:var(--danger);padding:12px 16px;border-radius:var(--r-sm);border-left:3px solid var(--danger);margin-bottom:16px;font-size:.86rem;"></div>
+
+      <!-- ⭐ SIMPLE FORM - Traditional POST, no fetch() -->
+      <form action="/auth/login" method="POST">
+        <div class="form-group">
+          <label class="form-label">Email Address <span class="req">*</span></label>
+          <input type="email" name="email" class="form-control" placeholder="you@example.com" required autocomplete="email" value="admin@xolanidriving.co.za">
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;justify-content:space-between">Password <span class="req">*</span><a href="/auth/forgot-password.html" class="auth-link" style="font-weight:500;font-size:.8rem">Forgot password?</a></label>
+          <div style="position:relative">
+            <input type="password" name="password" id="pw-input" class="form-control" placeholder="••••••••" required autocomplete="current-password" style="padding-right:42px" value="Admin123!">
+            <button type="button" id="pw-toggle" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:.9rem"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="form-check" style="margin-bottom:20px">
+          <input type="checkbox" id="remember-me" name="remember">
+          <label class="form-check-label" for="remember-me">Remember me for 30 days</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+      </form>
+
+      <div class="auth-divider">or</div>
+
+      <div style="background:var(--gray-50);border-radius:var(--r);padding:16px;text-align:center;border:1px solid var(--gray-100)">
+        <p style="font-size:.84rem;color:var(--gray-500)">Don't have an account yet?</p>
+        <a href="/auth/register.html" class="btn btn-dark btn-block" style="margin-top:10px"><i class="fas fa-user-plus"></i> Create Free Account</a>
+      </div>
+
+      <div style="margin-top:20px;padding:14px;background:rgba(15,42,74,.05);border-radius:var(--r-sm);border-left:3px solid var(--accent)">
+        <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:6px"><strong style="color:var(--primary)">Demo Credentials:</strong></p>
+        <p style="font-size:.76rem;color:var(--gray-500)">Student: student@demo.co.za / Password123!</p>
+        <p style="font-size:.76rem;color:var(--gray-500)">Admin: admin@demo.co.za / Admin123!</p>
+      </div>
+
+      <p style="text-align:center;margin-top:20px;font-size:.78rem;color:var(--gray-400)">
+        <a href="/" class="auth-link" style="font-weight:500">← Back to Website</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>
+// ─── Password Toggle Only ──────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  const toggleBtn = document.getElementById('pw-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      const inp = document.getElementById('pw-input');
+      const icon = this.querySelector('i');
+      if (inp.type === 'password') { 
+        inp.type = 'text'; 
+        icon.className = 'fas fa-eye-slash'; 
+      } else { 
+        inp.type = 'password'; 
+        icon.className = 'fas fa-eye'; 
+      }
+    });
+  }
+
+  // ─── Show error from URL parameter ──────────────────────
+  const urlParams = new URLSearchParams(window.location.search);
+  const error = urlParams.get('error');
+  if (error) {
+    const errorEl = document.getElementById('login-error');
+    errorEl.textContent = error;
+    errorEl.style.display = 'block';
+  }
+
+  console.log('✅ Login page initialized!');
+});
+</script>
+</body>
+</html>
