@@ -176,7 +176,7 @@ Open http://localhost:3000. The app must run through the Express server; opening
 | Role | Email | Password |
 |---|---|---|
 | Admin | admin@xolanidriving.co.za | Admin123! |
-| Student | teststudent@xolanidriving.co.za | Student123! |
+| Student | student@xolanidriving.co.za | Student123! |
 
 ---
 

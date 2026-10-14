@@ -1,5 +1,11 @@
 const mysql = require('mysql2/promise');
 
+// Hosted databases such as Aiven require an encrypted connection.
+// Set DB_SSL_CA to the provider's CA certificate (the full PEM text) to enable it.
+const ssl = process.env.DB_SSL_CA
+    ? { ca: process.env.DB_SSL_CA.replace(/\\n/g, '\n'), rejectUnauthorized: true }
+    : undefined;
+
 // Create connection pool
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
@@ -7,6 +13,7 @@ const pool = mysql.createPool({
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'xolani_driving_school',
+    ssl,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
