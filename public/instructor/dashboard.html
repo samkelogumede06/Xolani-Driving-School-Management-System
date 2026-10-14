@@ -56,6 +56,7 @@
       <input type="hidden" id="lesson-id">
       <div class="form-group"><label class="form-label">Status</label><select id="lesson-status" class="form-control"><option value="scheduled">Scheduled</option><option value="in_progress">In Progress</option><option value="completed">Completed</option><option value="no_show">No Show</option><option value="cancelled">Cancelled</option></select></div>
       <div class="form-group"><label class="form-label">Student Score</label><input type="number" id="lesson-score" class="form-control" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Skill Ratings <span style="font-weight:400;color:var(--gray-400)">(0–100, rate the skills covered in this lesson)</span></label><div id="lesson-skills" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px"></div></div>
       <div class="form-group"><label class="form-label">Instructor Notes</label><textarea id="lesson-notes" class="form-control" rows="4"></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn btn-outline btn-sm" data-close="lesson-modal">Cancel</button><button class="btn btn-primary" id="save-lesson-btn"><i class="fas fa-save"></i> Save</button></div>
@@ -98,11 +99,12 @@ function openLesson(id) {
   document.getElementById('lesson-status').value = l.status || 'scheduled';
   document.getElementById('lesson-score').value = l.student_score || '';
   document.getElementById('lesson-notes').value = l.instructor_notes || '';
+  renderSkillInputs('lesson-skills', l.areas_covered);
   Modal.open('lesson-modal');
 }
 async function saveLesson() {
   const id = document.getElementById('lesson-id').value;
-  const body = { status: document.getElementById('lesson-status').value, student_score: document.getElementById('lesson-score').value, instructor_notes: document.getElementById('lesson-notes').value };
+  const body = { status: document.getElementById('lesson-status').value, student_score: document.getElementById('lesson-score').value, instructor_notes: document.getElementById('lesson-notes').value, skill_scores: collectSkillInputs('lesson-skills') };
   const data = await api(`/api/instructor/lessons/${id}/status`, { body });
   if (data.success) { Toast.success('Lesson updated.'); Modal.close('lesson-modal'); loadDashboard(); }
   else Toast.error(data.error);

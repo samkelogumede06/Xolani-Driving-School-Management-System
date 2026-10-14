@@ -67,11 +67,11 @@
     <!-- BRANCH QUICK STATS -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px">
       <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:var(--r-lg);padding:20px;color:#fff;display:flex;align-items:center;justify-content:space-between">
-        <div><div style="font-size:.7rem;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Umlazi V</div><div style="font-size:1.5rem;font-weight:800;font-family:var(--ff-head)" id="b1-students">—</div><div style="font-size:.78rem;opacity:.65">Active Students</div></div>
+        <div><div style="font-size:.7rem;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px" id="b1-name">Branch</div><div style="font-size:1.5rem;font-weight:800;font-family:var(--ff-head)" id="b1-students">—</div><div style="font-size:.78rem;opacity:.65">Active Students</div></div>
         <div style="text-align:right"><div style="font-size:.7rem;opacity:.6;margin-bottom:4px">Today's Lessons</div><div style="font-size:2rem;font-weight:800;font-family:var(--ff-head);color:var(--accent)" id="b1-lessons">—</div></div>
       </div>
       <div style="background:linear-gradient(135deg,#0f4c75,#1b6ca8);border-radius:var(--r-lg);padding:20px;color:#fff;display:flex;align-items:center;justify-content:space-between">
-        <div><div style="font-size:.7rem;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Umlazi W</div><div style="font-size:1.5rem;font-weight:800;font-family:var(--ff-head)" id="b2-students">—</div><div style="font-size:.78rem;opacity:.65">Active Students</div></div>
+        <div><div style="font-size:.7rem;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px" id="b2-name">Branch</div><div style="font-size:1.5rem;font-weight:800;font-family:var(--ff-head)" id="b2-students">—</div><div style="font-size:.78rem;opacity:.65">Active Students</div></div>
         <div style="text-align:right"><div style="font-size:.7rem;opacity:.6;margin-bottom:4px">Today's Lessons</div><div style="font-size:2rem;font-weight:800;font-family:var(--ff-head);color:var(--accent)" id="b2-lessons">—</div></div>
       </div>
     </div>
@@ -154,10 +154,11 @@ async function loadDashboard() {
     document.getElementById('s-enrollments').textContent = s.activeEnrollments || 0;
     document.getElementById('s-today').textContent = s.todayLessons || 0;
     document.getElementById('s-revenue').textContent = 'R' + parseFloat(s.monthRevenue||0).toFixed(0);
-    document.getElementById('b1-students').textContent = s.branch1Students || '—';
-    document.getElementById('b1-lessons').textContent = s.branch1Today || '—';
-    document.getElementById('b2-students').textContent = s.branch2Students || '—';
-    document.getElementById('b2-lessons').textContent = s.branch2Today || '—';
+    (data.branches || []).slice(0, 2).forEach((b, i) => {
+      document.getElementById(`b${i + 1}-name`).textContent = b.name;
+      document.getElementById(`b${i + 1}-students`).textContent = b.students;
+      document.getElementById(`b${i + 1}-lessons`).textContent = b.todayLessons;
+    });
 
     // Today's schedule
     const schedEl = document.getElementById('today-schedule');
@@ -209,9 +210,9 @@ async function loadDashboard() {
     }
 
     // AI summary
-    document.getElementById('ai-ready').textContent = data.aiSummary?.ready || '—';
-    document.getElementById('ai-highrisk').textContent = data.aiSummary?.highRisk || '—';
-    document.getElementById('ai-medrisk').textContent = data.aiSummary?.medRisk || '—';
+    document.getElementById('ai-ready').textContent = data.aiSummary?.ready ?? '—';
+    document.getElementById('ai-highrisk').textContent = data.aiSummary?.highRisk ?? '—';
+    document.getElementById('ai-medrisk').textContent = data.aiSummary?.medRisk ?? '—';
 
   } catch(err) { console.error(err); document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
 }

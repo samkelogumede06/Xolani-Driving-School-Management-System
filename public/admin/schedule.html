@@ -157,6 +157,7 @@
         </select>
       </div>
       <div class="form-group"><label class="form-label">Student Score (%)</label><input type="number" id="status-score" class="form-control" min="0" max="100" placeholder="0–100"></div>
+      <div class="form-group"><label class="form-label">Skill Ratings <span style="font-weight:400;color:var(--gray-400)">(optional, 0–100)</span></label><div id="status-skills" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px"></div></div>
       <div class="form-group"><label class="form-label">Instructor Notes</label><textarea id="status-notes" class="form-control" rows="3" placeholder="Notes about this lesson…"></textarea></div>
     </div>
     <div class="modal-footer">
@@ -350,6 +351,7 @@ function openStatusModal(id, status) {
   document.getElementById('status-select').value = status;
   document.getElementById('status-score').value = '';
   document.getElementById('status-notes').value = '';
+  renderSkillInputs('status-skills', null);
   Modal.open('status-modal');
 }
 
@@ -359,7 +361,8 @@ async function updateStatus() {
   const body = {
     status: document.getElementById('status-select').value,
     student_score: document.getElementById('status-score').value,
-    instructor_notes: document.getElementById('status-notes').value
+    instructor_notes: document.getElementById('status-notes').value,
+    skill_scores: collectSkillInputs('status-skills')
   };
   const data = await api(`/api/admin/schedule/${id}/status`, { body });
   if (data.success) { Toast.success('Status updated.'); Modal.close('status-modal'); loadSchedule(); }

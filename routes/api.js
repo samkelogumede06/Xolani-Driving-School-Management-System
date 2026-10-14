@@ -33,6 +33,16 @@ function serverError(req, res, err) {
   });
 }
 
+// ─── HELPER: Local (South African) dates as 'YYYY-MM-DD' ────
+// toISOString() would give the UTC date, which is yesterday between 00:00 and 02:00 SAST
+function localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function startOfMonth() {
+  const now = new Date();
+  return localDate(new Date(now.getFullYear(), now.getMonth(), 1));
+}
+
 // ─── AUTH MIDDLEWARE ─────────────────────────────────────────
 function auth(req, res, next) {
   if (!req.session?.user) return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -49,6 +59,50 @@ function instructorOnly(req, res, next) {
   if (!req.session?.user || req.session.user.role !== 'instructor')
     return res.status(403).json({ success: false, error: 'Instructor access required' });
   next();
+}
+
+// ─── HELPER: Skill ratings ──────────────────────────────────
+// Instructors can rate these per lesson (0–100); stored in lessons.areas_covered as JSON
+const SKILL_AREAS = [
+  { key: 'vehicle_control', label: 'Vehicle Control' },
+  { key: 'road_awareness', label: 'Road Awareness' },
+  { key: 'parking_yard', label: 'Parking & Yard' },
+  { key: 'observation', label: 'Observation' },
+  { key: 'k53_rules', label: 'K53 Rules' }
+];
+
+// Keep only known skills with whole-number scores 0–100; null if none were given
+function parseSkillScores(input) {
+  if (!input || typeof input !== 'object') return null;
+  const scores = {};
+  for (const { key } of SKILL_AREAS) {
+    const value = input[key];
+    if (value === undefined || value === null || value === '') continue;
+    const n = Math.round(Number(value));
+    if (Number.isFinite(n) && n >= 0 && n <= 100) scores[key] = n;
+  }
+  return Object.keys(scores).length ? scores : null;
+}
+
+function parseJson(value) {
+  if (!value) return null;
+  if (typeof value === 'object') return value;
+  try { return JSON.parse(value); } catch { return null; }
+}
+
+// Average each skill across a student's completed lessons that rated it
+function summariseSkills(lessons) {
+  return SKILL_AREAS.map(({ key, label }) => {
+    const values = lessons
+      .filter(l => l.status === 'completed')
+      .map(l => parseJson(l.areas_covered)?.[key])
+      .filter(v => typeof v === 'number');
+    return {
+      key, label,
+      score: values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : null,
+      assessments: values.length
+    };
+  });
 }
 
 // Strip credential fields before sending a profile row to the browser
@@ -464,6 +518,7 @@ router.get('/student/progress', auth, async (req, res) => {
       bestScore,
       improvement,
       attendanceRate: attRate,
+      skills: summariseSkills(lessons || []),
       testReadiness: ai.testReadiness,
       dropoutRisk: ai.dropoutRisk
     });
@@ -680,8 +735,8 @@ router.get('/student/scan-qr/:token', auth, async (req, res) => {
 // Admin Dashboard
 router.get('/admin/dashboard', auth, adminOnly, async (req, res) => {
   try {
-    const today = new Date().toISOString().split('T')[0];
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+    const today = localDate();
+    const monthStart = startOfMonth();
     
     // Get counts
     const totalStudents = await queryOne(
@@ -732,12 +787,25 @@ router.get('/admin/dashboard', auth, adminOnly, async (req, res) => {
     // Month revenue
     const monthPayments = await query(
       'SELECT amount FROM payments WHERE status = ? AND payment_date >= ?',
-      ['completed', startOfMonth]
+      ['completed', monthStart]
     );
     
     const monthRevenue = monthPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
     const totalStudentsCount = totalStudents?.count || 0;
     const todayLessonsCount = todayLessons?.count || 0;
+
+    // Per-branch students and today's lessons
+    const branches = await query(
+      `SELECT b.id, b.name,
+         (SELECT COUNT(*) FROM profiles p WHERE p.branch_id = b.id AND p.role = 'student' AND p.is_active = TRUE) AS students,
+         (SELECT COUNT(*) FROM lessons l WHERE l.branch_id = b.id AND l.scheduled_date = ?) AS today_lessons
+       FROM branches b ORDER BY b.name`,
+      [today]
+    );
+
+    // Readiness / dropout summary across active students
+    const activeStudents = await query("SELECT id FROM profiles WHERE role = 'student' AND is_active = TRUE");
+    const predictions = Object.values(await getStudentPredictions(activeStudents.map(s => s.id)));
     
     res.json({
       success: true,
@@ -746,19 +814,20 @@ router.get('/admin/dashboard', auth, adminOnly, async (req, res) => {
         totalStudents: totalStudentsCount,
         activeEnrollments: activeEnrollments?.count || 0,
         todayLessons: todayLessonsCount,
-        monthRevenue: monthRevenue.toFixed(2),
-        branch1Students: Math.floor(totalStudentsCount * 0.55),
-        branch1Today: Math.floor(todayLessonsCount * 0.55),
-        branch2Students: Math.floor(totalStudentsCount * 0.45),
-        branch2Today: Math.floor(todayLessonsCount * 0.45)
+        monthRevenue: monthRevenue.toFixed(2)
       },
+      branches: branches.map(b => ({ name: normalizeBranchName(b.name), students: b.students, todayLessons: b.today_lessons })),
       recentStudents: recentStudents || [],
       todayLessons: todayLessonData || [],
       recentPayments: recentPayments || [],
-      aiSummary: { ready: 3, highRisk: 2, medRisk: 4, total: 20 }
+      aiSummary: {
+        ready: predictions.filter(p => p.testReadiness.classification === 'Ready').length,
+        highRisk: predictions.filter(p => p.dropoutRisk.riskLevel === 'High Risk').length,
+        medRisk: predictions.filter(p => p.dropoutRisk.riskLevel === 'Medium Risk').length,
+        total: predictions.length
+      }
     });
   } catch (err) {
-    console.error('Admin dashboard error:', err.message);
     serverError(req, res, err);
   }
 });
@@ -890,15 +959,15 @@ router.post('/admin/enrollments', auth, adminOnly, async (req, res) => {
     
     if (!pkg) return res.json({ success: false, error: 'Package not found' });
     
-    const end = new Date(start_date);
-    end.setDate(end.getDate() + pkg.validity_days);
+    const [y, m, d] = String(start_date).split('-').map(Number);
+    const end = localDate(new Date(y, m - 1, d + (pkg.validity_days || 0)));
     
     await query(
       `INSERT INTO enrollments (id, student_id, package_id, branch_id, instructor_id, 
         status, lessons_completed, lessons_remaining, start_date, end_date, balance_due, total_paid)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [uuidv4(), student_id, package_id, branch_id, instructor_id || null,
-       'active', 0, pkg.lesson_count, start_date, end.toISOString().split('T')[0], pkg.price, 0]
+       'active', 0, pkg.lesson_count, start_date, end, pkg.price, 0]
     );
     
     await query(
@@ -1219,7 +1288,7 @@ router.delete('/admin/packages/:id', auth, adminOnly, async (req, res) => {
 router.get('/admin/schedule', auth, adminOnly, async (req, res) => {
   try {
     const { date, branch } = req.query;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = date || localDate();
     
     // Get all instructors for mapping
     const allInstructors = await query(
@@ -1362,20 +1431,26 @@ router.post('/admin/schedule', auth, adminOnly, async (req, res) => {
 // Update lesson status
 router.post('/admin/schedule/:id/status', auth, adminOnly, async (req, res) => {
   try {
-    const { status, instructor_notes, student_score } = req.body;
+    const { status, instructor_notes, student_score, skill_scores } = req.body;
     const updates = [];
     const params = [];
-    
+
     updates.push('status = ?');
     params.push(status);
-    
+
     if (instructor_notes) {
       updates.push('instructor_notes = ?');
       params.push(instructor_notes);
     }
-    if (student_score) {
+    if (student_score !== undefined && student_score !== '') {
       updates.push('student_score = ?');
       params.push(parseInt(student_score));
+    }
+    // Only overwrite earlier ratings when at least one skill was rated this time
+    const skills = parseSkillScores(skill_scores);
+    if (skills) {
+      updates.push('areas_covered = ?');
+      params.push(JSON.stringify(skills));
     }
     if (status === 'completed') {
       updates.push('attendance_marked_at = NOW()');
@@ -1435,7 +1510,7 @@ router.get('/admin/schedule/:id/qr', auth, adminOnly, async (req, res) => {
 router.get('/admin/attendance', auth, adminOnly, async (req, res) => {
   try {
     const { date, branch } = req.query;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = date || localDate();
     
     const lessons = await query(
       `SELECT 
@@ -1469,7 +1544,7 @@ router.get('/instructor/attendance', auth, instructorOnly, async (req, res) => {
   try {
     const userId = req.session.user.id;
     const { date } = req.query;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = date || localDate();
     
     const instructor = await getInstructorRecord(userId);
     const ids = [userId, instructor?.id].filter(Boolean);
@@ -1535,7 +1610,7 @@ router.post('/instructor/attendance/:id/mark', auth, instructorOnly, async (req,
 
 router.get('/instructor/dashboard', auth, instructorOnly, async (req, res) => {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDate();
     const { instructor, lessons } = await getInstructorLessons(req.session.user.id, { fromDate: today });
     
     const todayLessons = lessons.filter(l => l.scheduled_date === today);
@@ -1575,8 +1650,8 @@ router.post('/instructor/lessons/:id/status', auth, instructorOnly, async (req, 
   try {
     const instructor = await getInstructorRecord(req.session.user.id);
     const ids = [req.session.user.id, instructor?.id].filter(Boolean);
-    const { status, instructor_notes, student_score } = req.body;
-    
+    const { status, instructor_notes, student_score, skill_scores } = req.body;
+
     const allowed = ['scheduled', 'in_progress', 'completed', 'cancelled', 'no_show'];
     if (!allowed.includes(status)) return res.json({ success: false, error: 'Invalid lesson status.' });
     
@@ -1593,6 +1668,11 @@ router.post('/instructor/lessons/:id/status', auth, instructorOnly, async (req, 
     if (student_score !== undefined && student_score !== '') {
       updates.push('student_score = ?');
       params.push(parseInt(student_score));
+    }
+    if (skill_scores !== undefined) {
+      const skills = parseSkillScores(skill_scores);
+      updates.push('areas_covered = ?');
+      params.push(skills ? JSON.stringify(skills) : null);
     }
     if (['completed', 'no_show', 'in_progress'].includes(status)) {
       updates.push('attendance_marked_at = NOW()');
@@ -1834,7 +1914,7 @@ router.get('/instructor/ai-insights', auth, instructorOnly, async (req, res) => 
 
 router.get('/admin/payments', auth, adminOnly, async (req, res) => {
   try {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+    const monthStart = startOfMonth();
     
     const payments = await query(
       `SELECT p.*, CONCAT(prof.first_name, ' ', prof.last_name) as student_name, prof.phone as student_phone
@@ -1854,7 +1934,7 @@ router.get('/admin/payments', auth, adminOnly, async (req, res) => {
     
     const monthPay = await query(
       'SELECT amount FROM payments WHERE status = ? AND payment_date >= ?',
-      ['completed', startOfMonth]
+      ['completed', monthStart]
     );
     
     const allEnrollments = await query(
@@ -1927,47 +2007,58 @@ router.post('/admin/payments', auth, adminOnly, async (req, res) => {
 
 router.get('/admin/reports', auth, adminOnly, async (req, res) => {
   try {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
-    
-    const totalStudents = await queryOne(
-      'SELECT COUNT(*) as count FROM profiles WHERE role = ?',
-      ['student']
-    );
-    
-    const monthPayments = await query(
-      'SELECT amount FROM payments WHERE status = ? AND payment_date >= ?',
-      ['completed', startOfMonth]
-    );
-    
-    const monthLessons = await query(
-      'SELECT status, lesson_type FROM lessons WHERE scheduled_date >= ?',
-      [startOfMonth]
-    );
-    
-    const monthRevenue = monthPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
-    
-    const lTypes = { practical: 0, theory: 0, yard_test: 0, road_test: 0 };
-    monthLessons.forEach(l => {
-      if (lTypes[l.lesson_type] !== undefined) lTypes[l.lesson_type]++;
-    });
-    
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    const revenueChart = months.map((m, i) => ({ month: m, revenue: 15000 + Math.floor(Math.random() * 12000) }));
-    
+    const now = new Date();
+    const monthKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    // The current month and the 5 before it, oldest first
+    const months = Array.from({ length: 6 }, (_, i) => new Date(now.getFullYear(), now.getMonth() - 5 + i, 1));
+    const keys = months.map(monthKey);
+    const thisMonth = keys[5];
+    const since = `${keys[0]}-01`;
+
+    const [students, payments, lessons, enrollments, branches] = await Promise.all([
+      query("SELECT id, branch_id FROM profiles WHERE role = 'student' AND is_active = TRUE"),
+      query("SELECT amount, branch_id, DATE_FORMAT(payment_date, '%Y-%m') AS ym FROM payments WHERE status = 'completed' AND payment_date >= ?", [since]),
+      query("SELECT status, lesson_type, branch_id, DATE_FORMAT(scheduled_date, '%Y-%m') AS ym FROM lessons WHERE scheduled_date >= ?", [since]),
+      query("SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym FROM enrollments WHERE created_at >= ?", [since]),
+      query('SELECT id, name FROM branches ORDER BY name')
+    ]);
+
+    const sum = rows => rows.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    // Attended ÷ (attended + no-shows); null when no lessons have been marked yet
+    const attendance = rows => {
+      const attended = rows.filter(l => ['completed', 'in_progress'].includes(l.status)).length;
+      const missed = rows.filter(l => l.status === 'no_show').length;
+      return attended + missed ? Math.round((attended / (attended + missed)) * 100) : null;
+    };
+
+    const monthLessons = lessons.filter(l => l.ym === thisMonth);
+    const monthPayments = payments.filter(p => p.ym === thisMonth);
+    const lessonTypes = ['practical', 'theory', 'yard_test', 'road_test']
+      .map(type => monthLessons.filter(l => l.lesson_type === type).length);
+
+    const predictions = await getStudentPredictions(students.map(s => s.id));
+    const readyForTest = Object.values(predictions).filter(p => p.testReadiness.classification === 'Ready').length;
+
     res.json({
       success: true,
       user: req.session.user,
       reports: {
-        totalStudents: totalStudents?.count || 0,
-        monthRevenue: monthRevenue.toFixed(2),
-        estimatedPassRate: 94,
-        monthLessons: monthLessons?.length || 0,
-        branch1: { activeStudents: Math.floor((totalStudents?.count || 0) * 0.55), revenue: Math.floor(monthRevenue * 0.55), lessons: Math.floor((monthLessons?.length || 0) * 0.55), attendance: 91 },
-        branch2: { activeStudents: Math.floor((totalStudents?.count || 0) * 0.45), revenue: Math.floor(monthRevenue * 0.45), lessons: Math.floor((monthLessons?.length || 0) * 0.45), attendance: 88 },
-        revenueChart,
-        lessonTypes: [lTypes.practical || 65, lTypes.theory || 15, lTypes.yard_test || 12, lTypes.road_test || 8],
-        enrollments: [8, 12, 9, 14, 11, 16],
-        attendanceRates: [88, 91, 86, 93, 89, 94]
+        totalStudents: students.length,
+        monthRevenue: sum(monthPayments).toFixed(2),
+        readyForTest,
+        monthLessons: monthLessons.length,
+        months: months.map(d => d.toLocaleString('en-ZA', { month: 'short', year: '2-digit' })),
+        revenue: keys.map(k => Math.round(sum(payments.filter(p => p.ym === k)))),
+        enrollments: keys.map(k => enrollments.filter(e => e.ym === k).length),
+        attendanceRates: keys.map(k => attendance(lessons.filter(l => l.ym === k))),
+        lessonTypes,
+        branches: branches.map(b => ({
+          name: normalizeBranchName(b.name),
+          activeStudents: students.filter(s => s.branch_id === b.id).length,
+          revenue: Math.round(sum(monthPayments.filter(p => p.branch_id === b.id))),
+          lessons: monthLessons.filter(l => l.branch_id === b.id).length,
+          attendance: attendance(monthLessons.filter(l => l.branch_id === b.id))
+        }))
       }
     });
   } catch (err) {
@@ -2051,7 +2142,7 @@ router.post('/student/schedule', auth, async (req, res) => {
       return res.json({ success: false, error: 'Instructor, branch, date and time are required.' });
     }
     
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDate();
     if (scheduled_date < today) {
       return res.json({ success: false, error: 'You cannot book a lesson in the past.' });
     }

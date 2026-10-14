@@ -307,18 +307,6 @@ VALUES
   (UUID(), 'Refresher Course',   'Already licensed? Polish your skills with targeted refresher sessions.', 3,  950.00,  30, 'both',      FALSE, FALSE, FALSE, 6);
 
 -- ============================================================
--- SEED DATA — TESTIMONIALS (approved + featured)
--- ============================================================
-INSERT INTO testimonials (id, content, rating, is_approved, is_featured)
-VALUES
-  (UUID(), 'Passed first time! The instructors are incredibly patient and professional. The QR code system for attendance is so cool — no more paper registers.', 5, TRUE, TRUE),
-  (UUID(), 'The AI readiness score showed I was 89% ready. Booked my test and passed with flying colours. Best money spent!', 5, TRUE, TRUE),
-  (UUID(), 'Friendly staff, very flexible scheduling, and the online portal made it easy to track my progress from my phone. Highly recommended!', 5, TRUE, TRUE),
-  (UUID(), 'I was nervous about manual gear, but the instructors built my confidence step by step. Took the standard pack and it was more than enough!', 5, TRUE, TRUE),
-  (UUID(), 'The payment plan worked perfectly for my budget. Quality training without breaking the bank.', 4, TRUE, TRUE),
-  (UUID(), 'My second child is now also enrolled here. This school delivers results consistently. Family recommendation!', 5, TRUE, TRUE);
-
--- ============================================================
 -- HELPFUL INDEXES
 -- ============================================================
 CREATE INDEX idx_lessons_student_date ON lessons(student_id, scheduled_date);

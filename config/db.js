@@ -14,9 +14,18 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'xolani_driving_school',
     ssl,
+    // Return DATE columns as 'YYYY-MM-DD' strings (the app compares and displays them as text)
+    dateStrings: ['DATE'],
+    // The school runs on South African time (UTC+2, no daylight saving)
+    timezone: '+02:00',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
+});
+
+// Make NOW()/CURDATE() in SQL use South African time too (hosted servers run on UTC)
+pool.on('connection', connection => {
+    connection.query("SET time_zone = '+02:00'");
 });
 
 // Test connection

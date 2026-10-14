@@ -227,19 +227,21 @@ async function loadProgress() {
       <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--gray-500)">Days since last lesson</span><span style="font-weight:600">${f.daysSinceLastLesson}</span></div>
       <div style="display:flex;justify-content:space-between;font-size:.8rem"><span style="color:var(--gray-500)">Attendance trend</span><span class="badge badge-${f.trend==='improving'?'success':f.trend==='declining'?'danger':'gray'}">${f.trend}</span></div>`;
 
-    // Skill bars
-    const skills = [
-      { label:'Vehicle Control', val: Math.min(data.avgScore || 65, 100) },
-      { label:'Road Awareness', val: Math.min((data.avgScore || 65) - 5, 100) },
-      { label:'Parking & Yard', val: Math.min((data.avgScore || 65) + 5, 100) },
-      { label:'Observation', val: Math.min((data.avgScore || 65) - 10, 100) },
-      { label:'K53 Rules', val: Math.min((data.avgScore || 65) + 3, 100) },
-    ];
-    document.getElementById('skill-bars').innerHTML = skills.map(s => `
+    // Skill bars: averages of the instructor's per-lesson skill ratings
+    const skills = data.skills || [];
+    const skillBars = skills.map(s => s.score == null ? `
       <div>
-        <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px"><span style="color:var(--gray-700)">${s.label}</span><span style="font-weight:700;color:${s.val>=75?'var(--success)':'var(--warning)'}">${Math.round(s.val)}%</span></div>
-        <div class="progress progress-sm"><div class="progress-bar ${s.val>=75?'green':'amber'}" style="width:${Math.round(s.val)}%;transition:width 1s ease"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px"><span style="color:var(--gray-700)">${s.label}</span><span style="color:var(--gray-400)">Not assessed yet</span></div>
+        <div class="progress progress-sm"><div class="progress-bar" style="width:0"></div></div>
+      </div>` : `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px"><span style="color:var(--gray-700)">${s.label}</span><span style="font-weight:700;color:${s.score>=75?'var(--success)':'var(--warning)'}">${s.score}%</span></div>
+        <div class="progress progress-sm"><div class="progress-bar ${s.score>=75?'green':'amber'}" style="width:${s.score}%;transition:width 1s ease"></div></div>
+        <div style="font-size:.7rem;color:var(--gray-400);margin-top:2px">Based on ${s.assessments} lesson${s.assessments === 1 ? '' : 's'}</div>
       </div>`).join('');
+    const anyAssessed = skills.some(s => s.score != null);
+    document.getElementById('skill-bars').innerHTML = skillBars + (anyAssessed ? '' :
+      `<div style="font-size:.78rem;color:var(--gray-400);text-align:center">Your instructor rates these skills after each completed lesson.</div>`);
 
     // Score history
     const tbody = document.getElementById('score-tbody');

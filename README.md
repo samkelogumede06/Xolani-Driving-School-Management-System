@@ -4,10 +4,18 @@ A full-stack web platform for a driving school with two branches in Umlazi, KwaZ
 
 **Stack:** Node.js · Express · MySQL · HTML/CSS/vanilla JavaScript
 
-<!-- Add a live demo link and screenshots here once deployed, e.g.
-**Live demo:** https://your-app-url
-![Admin dashboard](docs/screenshots/admin-dashboard.png)
--->
+## 🔗 Live demo
+
+**https://xolani-driving-school.onrender.com**
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@xolanidriving.co.za | Admin123! |
+| Student | student@xolanidriving.co.za | Student123! |
+
+You can also register your own student account (a verification email is sent), or add an instructor from the admin portal.
+
+> ⏳ **The first load may take up to a minute.** The demo runs on free hosting (Render + Aiven + Brevo), which sleeps after 15 minutes without visitors. After it wakes up, it's fast.
 
 ---
 
@@ -20,6 +28,7 @@ A full-stack web platform for a driving school with two branches in Umlazi, KwaZ
 
 ### Student portal
 - Dashboard with upcoming lessons, notifications and a test-readiness score
+- Progress page with per-skill averages from the instructor's lesson ratings
 - Book lessons by choosing an available instructor and time slot
 - Lesson history, attendance record and payment history
 - **QR attendance:** scan the lesson's QR code with a phone to check in
@@ -27,7 +36,7 @@ A full-stack web platform for a driving school with two branches in Umlazi, KwaZ
 
 ### Instructor portal
 - Dashboard and list of their own lessons
-- Update lesson status, add notes and score the student
+- Update lesson status, add notes, score the student and rate 5 driving skills (vehicle control, road awareness, parking & yard, observation, K53 rules)
 - Generate a lesson's QR code and mark attendance manually
 - Set availability, view notifications and student insights
 - Forced password change on first login (admins create instructor accounts with a temporary password)
@@ -37,7 +46,7 @@ A full-stack web platform for a driving school with two branches in Umlazi, KwaZ
 - Manage students, enrolments, instructors, vehicles and packages
 - Daily schedule with lesson booking and QR code generation
 - Attendance records, payments (with CSV export) and enquiries
-- Reports with Chart.js charts (revenue, lesson types, enrolment trends)
+- Reports with Chart.js charts built from live data: revenue, enrolments and attendance over the last 6 months, this month's lesson types, and a per-branch comparison
 - Insights page with test-readiness and dropout-risk scores for every student
 
 ---
@@ -120,7 +129,7 @@ npm install
 CREATE DATABASE xolani_driving_school;
 USE xolani_driving_school;
 ```
-Then run the whole of [`database-schema-mysql.sql`](database-schema-mysql.sql). It creates all tables and seeds the two branches, the lesson packages and sample testimonials.
+Then run the whole of [`database-schema-mysql.sql`](database-schema-mysql.sql). It creates all tables and seeds the two branches and the lesson packages.
 
 ### 3. Configure environment variables
 Create a `.env` file in the project root:
@@ -137,6 +146,8 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=xolani_driving_school
+# Hosted MySQL that requires SSL (e.g. Aiven): paste the provider's CA certificate
+DB_SSL_CA=
 
 # Email: fill in SMTP, or set BREVO_API_KEY instead (it takes priority)
 SMTP_HOST=smtp.gmail.com
@@ -171,18 +182,13 @@ npm start
 ```
 Open http://localhost:3000. The app must run through the Express server; opening the HTML files directly won't work.
 
-### Demo accounts
-
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@xolanidriving.co.za | Admin123! |
-| Student | student@xolanidriving.co.za | Student123! |
-
 ---
 
 ## Deploying
 
-The app needs a Node.js host plus a MySQL database (static hosts like Vercel or Netlify won't work). For example, Railway (app + MySQL together) or Render plus a hosted MySQL such as Aiven.
+The app needs a Node.js host plus a MySQL database (static hosts like Vercel or Netlify won't work).
+
+The live demo runs entirely on free plans: **Render** (web service), **Aiven** (MySQL, encrypted with `DB_SSL_CA`) and **Brevo** (email API, because Render's free plan blocks SMTP ports). Times and dates use South African time (UTC+2) regardless of the server's time zone.
 
 1. Create the database by running `database-schema-mysql.sql`, then create an admin account (step 4 above). For an existing database, run the files in `migrations/` instead, oldest first.
 2. Set the environment variables listed in step 3 above on the host. Use `NODE_ENV=production`, a long random `SESSION_SECRET`, `APP_URL` set to the live URL (used in email links), and your database and email settings.
@@ -221,7 +227,6 @@ Many hosts block SMTP ports, especially on free plans. If the startup log shows 
 ---
 
 ## Known limitations and next steps
-- **Power BI** — the Reports page has an embed placeholder that needs a published report URL.
 - **Automated tests** — none yet.
 
 ---

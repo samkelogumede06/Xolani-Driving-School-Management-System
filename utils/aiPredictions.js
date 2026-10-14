@@ -11,7 +11,10 @@ function average(nums) {
 }
 
 function toDate(value) {
-  return value instanceof Date ? value : new Date(value);
+  if (value instanceof Date) return value;
+  // 'YYYY-MM-DD' means local midnight (new Date() alone would treat it as UTC midnight)
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match ? new Date(+match[1], +match[2] - 1, +match[3]) : new Date(value);
 }
 
 /**

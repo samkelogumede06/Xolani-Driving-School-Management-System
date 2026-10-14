@@ -156,17 +156,6 @@ ul{list-style:none}
 .pricing-card.popular .pkg-features .chk{color:var(--accent)}
 
 /* ============================================================
-   TESTIMONIALS
-   ============================================================ */
-.test-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px}
-.test-card{background:#fff;border-radius:var(--r);padding:26px;border:1px solid var(--gray-100);box-shadow:var(--sh)}
-.test-stars{color:var(--accent);font-size:.9rem;margin-bottom:12px}
-.test-text{font-size:.9rem;color:var(--gray-600);line-height:1.7;margin-bottom:18px;font-style:italic}
-.test-author{display:flex;align-items:center;gap:12px}
-.test-name{font-weight:700;font-size:.88rem;color:var(--primary)}
-.test-meta{font-size:.75rem;color:var(--gray-400)}
-
-/* ============================================================
    BRANCHES
    ============================================================ */
 .branches-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:26px}
@@ -223,12 +212,6 @@ footer{background:var(--primary-dark);color:rgba(255,255,255,.7);padding:56px 0 
 .value-icon{font-size:2.2rem;margin-bottom:12px;display:block}
 .value-title{font-weight:700;color:var(--primary);margin-bottom:8px}
 .value-desc{font-size:.86rem;color:var(--gray-500)}
-.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:22px}
-.team-card{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);border:1px solid var(--gray-100);text-align:center}
-.team-body{padding:18px}
-.team-name{font-weight:700;color:var(--primary);margin-bottom:4px}
-.team-role{font-size:.8rem;color:var(--accent);font-weight:600;margin-bottom:6px}
-.team-bio{font-size:.82rem;color:var(--gray-500)}
 
 /* ============================================================
    CONTACT PAGE

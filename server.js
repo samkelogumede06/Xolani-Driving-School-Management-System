@@ -1,3 +1,5 @@
+// The school operates on South African time; hosting servers default to UTC
+process.env.TZ = 'Africa/Johannesburg';
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');

@@ -413,9 +413,39 @@ function fmtTime(s) { if (!s) return '—'; const [h,m] = s.split(':'); const hr
 
 })();
 
+// ─── SKILL RATINGS (lesson forms) ───────────────────────────
+// Keys must match SKILL_AREAS in routes/api.js
+const SKILL_AREAS = [
+  { key: 'vehicle_control', label: 'Vehicle Control' },
+  { key: 'road_awareness', label: 'Road Awareness' },
+  { key: 'parking_yard', label: 'Parking & Yard' },
+  { key: 'observation', label: 'Observation' },
+  { key: 'k53_rules', label: 'K53 Rules' }
+];
+
+function renderSkillInputs(containerId, values) {
+  let current = values;
+  if (typeof current === 'string') { try { current = JSON.parse(current); } catch { current = null; } }
+  current = current || {};
+  document.getElementById(containerId).innerHTML = SKILL_AREAS.map(s => `
+    <div>
+      <label class="form-label" style="font-size:.76rem">${s.label}</label>
+      <input type="number" class="form-control" data-skill="${s.key}" min="0" max="100" placeholder="0–100" value="${current[s.key] ?? ''}">
+    </div>`).join('');
+}
+
+function collectSkillInputs(containerId) {
+  const scores = {};
+  document.querySelectorAll(`#${containerId} [data-skill]`).forEach(input => {
+    if (input.value !== '') scores[input.dataset.skill] = Number(input.value);
+  });
+  return scores;
+}
+
 // ─── GLOBAL EXPOSE ──────────────────────────────────────────
-Object.assign(window, { 
-  Toast, Modal, api, submitForm, filterTable, confirmAction, 
-  showQR, fmtCurrency, fmtDate, fmtTime
+Object.assign(window, {
+  Toast, Modal, api, submitForm, filterTable, confirmAction,
+  showQR, fmtCurrency, fmtDate, fmtTime,
+  renderSkillInputs, collectSkillInputs
 });
 
