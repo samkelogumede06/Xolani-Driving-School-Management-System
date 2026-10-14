@@ -245,4 +245,4 @@ Many hosts block SMTP ports, especially on free plans. If the startup log shows 
 ## Author
 **Samkelo Gumede** — [GitHub](https://github.com/samkelogumede06)
 
-Built as a digital transformation project (IS3) for Xolani Driving School.
+
