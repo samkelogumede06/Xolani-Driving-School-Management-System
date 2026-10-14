@@ -123,8 +123,28 @@ USE xolani_driving_school;
 Then run the whole of [`database-schema-mysql.sql`](database-schema-mysql.sql). It creates all tables and seeds the two branches, the lesson packages and sample testimonials.
 
 ### 3. Configure environment variables
-```bash
-cp .env.example .env
+Create a `.env` file in the project root:
+```env
+# Server
+PORT=3000
+NODE_ENV=development
+APP_URL=http://localhost:3000
+SESSION_SECRET=replace-with-a-long-random-string
+
+# MySQL
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=xolani_driving_school
+
+# Email: fill in SMTP, or set BREVO_API_KEY instead (it takes priority)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+BREVO_API_KEY=
+MAIL_FROM="Xolani Driving School <you@gmail.com>"
 ```
 Fill in your MySQL credentials and set `SESSION_SECRET` to a long random string.
 
@@ -165,7 +185,7 @@ Open http://localhost:3000. The app must run through the Express server; opening
 The app needs a Node.js host plus a MySQL database (static hosts like Vercel or Netlify won't work). For example, Railway (app + MySQL together) or Render plus a hosted MySQL such as Aiven.
 
 1. Create the database by running `database-schema-mysql.sql`, then create an admin account (step 4 above). For an existing database, run the files in `migrations/` instead, oldest first.
-2. Set the environment variables from `.env.example` on the host. Use `NODE_ENV=production`, a long random `SESSION_SECRET`, `APP_URL` set to the live URL (used in email links), and your database and email settings.
+2. Set the environment variables listed in step 3 above on the host. Use `NODE_ENV=production`, a long random `SESSION_SECRET`, `APP_URL` set to the live URL (used in email links), and your database and email settings.
 3. Build command `npm install`, start command `npm start`.
 
 Many hosts block SMTP ports, especially on free plans. If the startup log shows the SMTP connection failing, use `BREVO_API_KEY` instead.
