@@ -4,6 +4,7 @@
 -- ============================================================
 
 -- Drop tables in reverse order (avoid foreign key errors)
+DROP TABLE IF EXISTS email_verification_tokens;
 DROP TABLE IF EXISTS ai_predictions;
 DROP TABLE IF EXISTS contact_submissions;
 DROP TABLE IF EXISTS testimonials;
@@ -58,8 +59,6 @@ CREATE TABLE profiles (
   reset_token_hash           CHAR(64),
   reset_token_expires        DATETIME,
   email_verified             BOOLEAN NOT NULL DEFAULT TRUE,  -- self sign-ups start as FALSE until the emailed link is clicked
-  verify_token_hash          CHAR(64),
-  verify_token_expires       DATETIME,
   is_active                  BOOLEAN DEFAULT TRUE,
   created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -228,6 +227,19 @@ CREATE TABLE notifications (
 );
 
 -- ============================================================
+-- EMAIL VERIFICATION LINKS (one row per email sent; SHA-256 hash only)
+-- ============================================================
+CREATE TABLE email_verification_tokens (
+  id          CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  user_id     CHAR(36) NOT NULL,
+  token_hash  CHAR(64) NOT NULL,
+  expires_at  DATETIME NOT NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_verification_token (token_hash),
+  FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE
+);
+
+-- ============================================================
 -- AI PREDICTIONS (cached)
 -- ============================================================
 CREATE TABLE ai_predictions (
@@ -312,7 +324,6 @@ VALUES
 CREATE INDEX idx_lessons_student_date ON lessons(student_id, scheduled_date);
 CREATE INDEX idx_lessons_scheduled_date ON lessons(scheduled_date);
 CREATE INDEX idx_profiles_reset_token ON profiles(reset_token_hash);
-CREATE INDEX idx_profiles_verify_token ON profiles(verify_token_hash);
 CREATE INDEX idx_payments_student_id ON payments(student_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id, is_read);
 CREATE INDEX idx_enrollments_student ON enrollments(student_id, status);

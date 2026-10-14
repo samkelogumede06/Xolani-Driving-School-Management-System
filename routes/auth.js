@@ -18,9 +18,11 @@ function appUrl(req) {
 
 async function sendVerificationLink(req, user) {
   const token = crypto.randomBytes(32).toString('hex');
+  // Each email gets its own token, so every link sent stays valid (emails can
+  // arrive late or out of order, and people often sign up or resend twice)
   await pool.query(
-    'UPDATE profiles SET verify_token_hash = ?, verify_token_expires = DATE_ADD(NOW(), INTERVAL 24 HOUR) WHERE id = ?',
-    [hashToken(token), user.id]
+    'INSERT INTO email_verification_tokens (user_id, token_hash, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))',
+    [user.id, hashToken(token)]
   );
   const verifyUrl = `${appUrl(req)}/auth/verify-email?token=${token}`;
   sendVerificationEmail({ to: user.email, firstName: user.first_name, verifyUrl })
@@ -82,7 +84,7 @@ router.post('/login', async (req, res) => {
     }
 
     if (!user.email_verified) {
-      const msg = 'Please verify your email first. Check your inbox (and spam folder) for the verification link.';
+      const msg = 'Please verify your email first. Check your inbox (and spam folder) for the verification link. It can take a few minutes to arrive.';
       return res.redirect(`/auth/login.html?unverified=1&email=${encodeURIComponent(user.email)}&error=${encodeURIComponent(msg)}`);
     }
 
@@ -200,7 +202,7 @@ router.post('/register', async (req, res) => {
 
     res.json({
       success: true,
-      message: `Account created! We've sent a verification link to ${email}. Click it to activate your account, then log in.`
+      message: `Account created! We've sent a verification link to ${email}. It can take a few minutes to arrive. Click it to activate your account, then log in.`
     });
   } catch (err) {
     console.error('❌ Register error:', err.message);
@@ -296,7 +298,10 @@ router.get('/verify-email', async (req, res) => {
     if (!token) return fail('Invalid verification link.');
 
     const [rows] = await pool.query(
-      'SELECT id, first_name FROM profiles WHERE verify_token_hash = ? AND verify_token_expires > NOW()',
+      `SELECT p.id, p.first_name
+       FROM email_verification_tokens t
+       JOIN profiles p ON p.id = t.user_id
+       WHERE t.token_hash = ? AND t.expires_at > NOW()`,
       [hashToken(token)]
     );
     const user = rows[0];
@@ -304,10 +309,8 @@ router.get('/verify-email', async (req, res) => {
       return fail('This verification link is invalid or has expired. If you already verified, just log in — otherwise log in to get a new link.');
     }
 
-    await pool.query(
-      'UPDATE profiles SET email_verified = TRUE, verify_token_hash = NULL, verify_token_expires = NULL WHERE id = ?',
-      [user.id]
-    );
+    await pool.query('UPDATE profiles SET email_verified = TRUE WHERE id = ?', [user.id]);
+    await pool.query('DELETE FROM email_verification_tokens WHERE user_id = ?', [user.id]);
 
     await pool.query(
       `INSERT INTO notifications (id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)`,
@@ -338,7 +341,7 @@ router.post('/resend-verification', async (req, res) => {
     if (user && !user.email_verified && user.is_active) {
       await sendVerificationLink(req, user);
     }
-    res.json({ success: true, message: 'If that account still needs verifying, a new link has been sent. Check your inbox (and spam folder).' });
+    res.json({ success: true, message: 'If that account still needs verifying, a new link has been sent. It can take a few minutes to arrive, and any of the verification emails you received will work. Check your inbox (and spam folder).' });
   } catch (err) {
     console.error('Resend verification error:', err.message);
     res.json({ success: false, error: 'Something went wrong. Please try again.' });
@@ -411,10 +414,11 @@ router.post('/reset-password', async (req, res) => {
     await pool.query(
       `UPDATE profiles
        SET password_hash = ?, must_change_password = FALSE, reset_token_hash = NULL, reset_token_expires = NULL,
-           email_verified = TRUE, verify_token_hash = NULL, verify_token_expires = NULL
+           email_verified = TRUE
        WHERE id = ?`,
       [password_hash, user.id]
     );
+    await pool.query('DELETE FROM email_verification_tokens WHERE user_id = ?', [user.id]);
 
     sendPasswordChangedEmail({ to: user.email, firstName: user.first_name })
       .catch(err => console.error('Password changed email failed:', err.message));

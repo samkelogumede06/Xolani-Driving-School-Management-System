@@ -87,7 +87,7 @@ A completed yard test scored 50 or higher adds 5 points, and each no-show subtra
 Results: **Low** (below 35), **Medium** (35–64), **High** (65+).
 
 ### Email verification
-1. A new sign-up is created as unverified, and a "Verify My Email" link is emailed to the address. The link is valid for 24 hours and works once.
+1. A new sign-up is created as unverified, and a "Verify My Email" link is emailed to the address. Each link is valid for 24 hours. Every link sent keeps working until the account is verified, because emails can arrive late or out of order and people often sign up or resend twice.
 2. Unverified accounts can't log in. The login page explains why and offers a **Resend verification email** button.
 3. If someone registers with another person's email, they can't use the account because they can't open the link. When the real owner signs up, they take the unverified account over.
 4. Accounts created by an admin (instructors) and accounts that existed before this feature count as verified. Completing a password reset also verifies the email, since it proves the user can read that inbox.
