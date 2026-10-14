@@ -411,7 +411,6 @@ function fmtTime(s) { if (!s) return '—'; const [h,m] = s.split(':'); const hr
     });
   });
 
-  console.log('✅ Universal event delegation active!');
 })();
 
 // ─── GLOBAL EXPOSE ──────────────────────────────────────────
@@ -420,4 +419,3 @@ Object.assign(window, {
   showQR, fmtCurrency, fmtDate, fmtTime
 });
 
-console.log('✅ App.js loaded successfully!');

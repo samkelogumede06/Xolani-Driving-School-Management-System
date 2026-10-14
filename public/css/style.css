@@ -163,7 +163,6 @@ ul{list-style:none}
 .test-stars{color:var(--accent);font-size:.9rem;margin-bottom:12px}
 .test-text{font-size:.9rem;color:var(--gray-600);line-height:1.7;margin-bottom:18px;font-style:italic}
 .test-author{display:flex;align-items:center;gap:12px}
-.test-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover}
 .test-name{font-weight:700;font-size:.88rem;color:var(--primary)}
 .test-meta{font-size:.75rem;color:var(--gray-400)}
 
@@ -226,9 +225,6 @@ footer{background:var(--primary-dark);color:rgba(255,255,255,.7);padding:56px 0 
 .value-desc{font-size:.86rem;color:var(--gray-500)}
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:22px}
 .team-card{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);border:1px solid var(--gray-100);text-align:center}
-.team-img{height:220px;overflow:hidden}
-.team-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
-.team-card:hover .team-img img{transform:scale(1.06)}
 .team-body{padding:18px}
 .team-name{font-weight:700;color:var(--primary);margin-bottom:4px}
 .team-role{font-size:.8rem;color:var(--accent);font-weight:600;margin-bottom:6px}

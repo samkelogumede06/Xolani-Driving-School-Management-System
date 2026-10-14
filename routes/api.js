@@ -3,7 +3,7 @@ const router = express.Router();
 const QRCode = require('qrcode');
 const crypto = require('crypto');
 const { pool } = require('../config/db');
-const { generateDemoPrediction, calculateTestReadiness, calculateDropoutRisk } = require('../utils/aiPredictions');
+const { predictStudent } = require('../utils/aiPredictions');
 
 // ─── HELPER FUNCTIONS ─────────────────────────────────────────
 
@@ -24,6 +24,15 @@ async function queryOne(sql, params = []) {
   return rows.length > 0 ? rows[0] : null;
 }
 
+// Log the real error on the server; only show its details to the browser in development
+function serverError(req, res, err) {
+  console.error(`${req.method} ${req.originalUrl} failed:`, err);
+  res.json({
+    success: false,
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong. Please try again.'
+  });
+}
+
 // ─── AUTH MIDDLEWARE ─────────────────────────────────────────
 function auth(req, res, next) {
   if (!req.session?.user) return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -40,6 +49,12 @@ function instructorOnly(req, res, next) {
   if (!req.session?.user || req.session.user.role !== 'instructor')
     return res.status(403).json({ success: false, error: 'Instructor access required' });
   next();
+}
+
+// Strip credential fields before sending a profile row to the browser
+function safeProfile(profile) {
+  const { password_hash, reset_token_hash, reset_token_expires, ...rest } = profile;
+  return rest;
 }
 
 function temporaryPassword() {
@@ -102,6 +117,47 @@ async function getInstructorLessons(userId, opts = {}) {
       branch_name: l.branch_name
     }))
   };
+}
+
+// ─── HELPER: Readiness + dropout predictions ────────────────
+// Returns { [studentId]: { testReadiness, dropoutRisk } } built from real records
+async function getStudentPredictions(studentIds) {
+  const ids = [...new Set(studentIds.filter(Boolean))];
+  if (ids.length === 0) return {};
+
+  const [profiles, lessons, enrollments] = await Promise.all([
+    query('SELECT id, created_at FROM profiles WHERE id IN (?)', [ids]),
+    query(
+      `SELECT student_id, status, lesson_type, scheduled_date, student_score
+       FROM lessons WHERE student_id IN (?)`,
+      [ids]
+    ),
+    query(
+      `SELECT e.student_id, e.start_date, e.total_paid, e.balance_due, pkg.lesson_count
+       FROM enrollments e
+       LEFT JOIN packages pkg ON e.package_id = pkg.id
+       WHERE e.student_id IN (?) AND e.status = 'active'
+       ORDER BY e.created_at DESC`,
+      [ids]
+    )
+  ]);
+
+  const createdAt = {};
+  profiles.forEach(p => { createdAt[p.id] = p.created_at; });
+  const lessonsBy = {};
+  lessons.forEach(l => { (lessonsBy[l.student_id] ||= []).push(l); });
+  const enrollmentBy = {};
+  enrollments.forEach(e => { if (!enrollmentBy[e.student_id]) enrollmentBy[e.student_id] = e; });
+
+  const predictions = {};
+  ids.forEach(id => {
+    predictions[id] = predictStudent({
+      lessons: lessonsBy[id] || [],
+      enrollment: enrollmentBy[id] || null,
+      createdAt: createdAt[id]
+    });
+  });
+  return predictions;
 }
 
 // ─── HELPER: Normalize branch name ──────────────────────────
@@ -223,9 +279,9 @@ router.get('/student/dashboard', auth, async (req, res) => {
     const completed = allLessons.filter(l => l.status === 'completed');
     const scores = completed.filter(l => l.student_score != null).map(l => l.student_score);
     const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-    const attRate = allLessons.length ? Math.round((completed.length / allLessons.length) * 100) : 0;
-    
-    const ai = generateDemoPrediction(sid);
+
+    const ai = (await getStudentPredictions([sid]))[sid];
+    const attRate = ai.testReadiness.breakdown.attendanceRate;
     
     res.json({
       success: true,
@@ -252,7 +308,7 @@ router.get('/student/dashboard', auth, async (req, res) => {
     });
   } catch (err) {
     console.error('Student dashboard error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -282,7 +338,7 @@ router.get('/student/lessons', auth, async (req, res) => {
       lessons: lessons || []
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -324,7 +380,7 @@ router.post('/student/lessons/:id/cancel', auth, async (req, res) => {
     
     res.json({ success: true, message: 'Lesson cancelled successfully.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -357,7 +413,7 @@ router.get('/student/attendance', auth, async (req, res) => {
       stats: { totalLessons: all.length, present, absent, qrScans, attendanceRate: attRate }
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -390,9 +446,8 @@ router.get('/student/progress', auth, async (req, res) => {
     const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
     const bestScore = scores.length ? Math.max(...scores) : 0;
     const improvement = scores.length >= 2 ? scores[scores.length - 1] - scores[0] : null;
-    const attRate = lessons?.length ? Math.round((completed.length / lessons.length) * 100) : 0;
-    
-    const ai = generateDemoPrediction(sid);
+    const ai = (await getStudentPredictions([sid]))[sid];
+    const attRate = ai.testReadiness.breakdown.attendanceRate;
     
     res.json({
       success: true,
@@ -413,7 +468,7 @@ router.get('/student/progress', auth, async (req, res) => {
       dropoutRisk: ai.dropoutRisk
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -447,7 +502,7 @@ router.get('/student/payments', auth, async (req, res) => {
       enrollmentStatus: enrollment?.status
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -460,7 +515,7 @@ router.get('/student/notifications', auth, async (req, res) => {
     );
     res.json({ success: true, user: req.session.user, notifications: notifications || [] });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -515,7 +570,7 @@ router.get('/student/profile', auth, async (req, res) => {
     );
     res.json({ success: true, profile: { ...profile, email: req.session.user.email } });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -540,7 +595,7 @@ router.put('/student/profile', auth, async (req, res) => {
     
     res.json({ success: true, message: 'Profile updated successfully.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -704,7 +759,7 @@ router.get('/admin/dashboard', auth, adminOnly, async (req, res) => {
     });
   } catch (err) {
     console.error('Admin dashboard error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -732,12 +787,14 @@ router.get('/admin/students', auth, adminOnly, async (req, res) => {
       enrMap[e.student_id] = e;
     });
     
+    const predictions = await getStudentPredictions(students.map(s => s.id));
+
     const enriched = students.map(s => {
       const e = enrMap[s.id];
-      const ai = generateDemoPrediction(s.id);
+      const ai = predictions[s.id];
       const pct = e ? Math.round(((e.lessons_completed || 0) / (e.lesson_count || 10)) * 100) : 0;
       return {
-        ...s,
+        ...safeProfile(s),
         branch_name: s.branch_name,
         enrollment_status: e?.status || null,
         lessons_completed: e?.lessons_completed || 0,
@@ -749,7 +806,7 @@ router.get('/admin/students', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, user: req.session.user, students: enriched });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -764,10 +821,12 @@ router.get('/admin/students/:id', auth, adminOnly, async (req, res) => {
       [req.params.id]
     );
     
-    const ai = generateDemoPrediction(req.params.id);
-    res.json({ success: true, student: { ...student, email: req.session.user.email }, aiPredictions: ai });
+    if (!student) return res.json({ success: false, error: 'Student not found.' });
+    
+    const ai = (await getStudentPredictions([student.id]))[student.id];
+    res.json({ success: true, student: safeProfile(student), aiPredictions: ai });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -786,7 +845,7 @@ router.post('/admin/students/:id/toggle-status', auth, adminOnly, async (req, re
     
     res.json({ success: true, is_active: !student.is_active });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -815,7 +874,7 @@ router.delete('/admin/students/:id', auth, adminOnly, async (req, res) => {
     res.json({ success: true, message: 'Student permanently deleted.' });
   } catch (err) {
     console.error('Delete student error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -851,7 +910,7 @@ router.post('/admin/enrollments', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, message: 'Student enrolled successfully.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -893,7 +952,7 @@ router.get('/admin/instructors', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, user: req.session.user, instructors: instructors || [], branches: branches || [] });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -931,7 +990,7 @@ router.post('/admin/instructors', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, message: 'Instructor added successfully.', temporaryPassword: password });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -950,7 +1009,7 @@ router.post('/admin/instructors/:id/toggle', auth, adminOnly, async (req, res) =
     
     res.json({ success: true, is_available: !instructor.is_available });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -974,7 +1033,7 @@ router.delete('/admin/instructors/:id', auth, adminOnly, async (req, res) => {
     res.json({ success: true, message: 'Instructor permanently deleted.' });
   } catch (err) {
     console.error('Delete instructor error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -996,7 +1055,7 @@ router.get('/admin/vehicles', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, user: req.session.user, vehicles: vehicles || [], branches: branches || [] });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1015,7 +1074,7 @@ router.post('/admin/vehicles', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, message: 'Vehicle added.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1038,7 +1097,7 @@ router.put('/admin/vehicles/:id', auth, adminOnly, async (req, res) => {
     res.json({ success: true, message: 'Vehicle updated successfully.' });
   } catch (err) {
     console.error('Update vehicle error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1064,7 +1123,7 @@ router.delete('/admin/vehicles/:id', auth, adminOnly, async (req, res) => {
     res.json({ success: true, message: 'Vehicle deleted successfully.' });
   } catch (err) {
     console.error('Delete vehicle error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1083,7 +1142,7 @@ router.post('/admin/vehicles/:id/toggle', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, is_active: !vehicle.is_active });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1097,7 +1156,7 @@ router.get('/admin/packages', auth, adminOnly, async (req, res) => {
     );
     res.json({ success: true, user: req.session.user, packages: packages || [] });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1117,7 +1176,7 @@ router.post('/admin/packages', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, message: 'Package created.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1139,7 +1198,7 @@ router.put('/admin/packages/:id', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, message: 'Package updated.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1150,7 +1209,7 @@ router.delete('/admin/packages/:id', auth, adminOnly, async (req, res) => {
     res.json({ success: true, message: 'Package deleted successfully.' });
   } catch (err) {
     console.error('Delete package error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1235,7 +1294,7 @@ router.get('/admin/schedule', auth, adminOnly, async (req, res) => {
     });
   } catch (err) {
     console.error('Schedule GET error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1296,7 +1355,7 @@ router.post('/admin/schedule', auth, adminOnly, async (req, res) => {
     });
   } catch (err) {
     console.error('Schedule POST error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1331,7 +1390,7 @@ router.post('/admin/schedule/:id/status', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1366,7 +1425,7 @@ router.get('/admin/schedule/:id/qr', auth, adminOnly, async (req, res) => {
     res.json({ success: true, qrCode: qrDataUrl, date: lesson.scheduled_date, time: lesson.scheduled_time });
   } catch (err) {
     console.error('Admin QR error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1401,7 +1460,7 @@ router.get('/admin/attendance', auth, adminOnly, async (req, res) => {
       lessons: lessons || []
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1436,7 +1495,7 @@ router.get('/instructor/attendance', auth, instructorOnly, async (req, res) => {
       lessons: lessons || []
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1450,7 +1509,7 @@ router.post('/admin/attendance/:id/mark', auth, adminOnly, async (req, res) => {
     );
     res.json({ success: true });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1468,7 +1527,7 @@ router.post('/instructor/attendance/:id/mark', auth, instructorOnly, async (req,
     );
     res.json({ success: true });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1496,7 +1555,7 @@ router.get('/instructor/dashboard', auth, instructorOnly, async (req, res) => {
       }
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1508,7 +1567,7 @@ router.get('/instructor/lessons', auth, instructorOnly, async (req, res) => {
     });
     res.json({ success: true, user: req.session.user, lessons });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1551,7 +1610,7 @@ router.post('/instructor/lessons/:id/status', auth, instructorOnly, async (req, 
     
     res.json({ success: true, message: 'Lesson updated.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1589,7 +1648,7 @@ router.get('/instructor/lessons/:id/qr', auth, instructorOnly, async (req, res) 
     res.json({ success: true, qrCode, date: lesson.scheduled_date, time: lesson.scheduled_time });
   } catch (err) {
     console.error('Instructor QR error:', err.message);
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1628,7 +1687,7 @@ router.post('/instructor/lessons/:id/cancel', auth, instructorOnly, async (req, 
     
     res.json({ success: true, message: 'Lesson cancelled successfully.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1650,7 +1709,7 @@ router.get('/instructor/profile', auth, instructorOnly, async (req, res) => {
       instructor
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1680,7 +1739,7 @@ router.put('/instructor/profile', auth, instructorOnly, async (req, res) => {
     
     res.json({ success: true, message: 'Profile updated.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1693,7 +1752,7 @@ router.post('/instructor/availability', auth, instructorOnly, async (req, res) =
     );
     res.json({ success: true, is_available: !!is_available });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1703,11 +1762,12 @@ router.post('/instructor/availability', auth, instructorOnly, async (req, res) =
 router.get('/admin/ai-insights', auth, adminOnly, async (req, res) => {
   try {
     const students = await query(
-      'SELECT id, first_name, last_name, created_at FROM profiles WHERE role = ? AND is_active = true LIMIT 25',
+      'SELECT id, first_name, last_name, created_at FROM profiles WHERE role = ? AND is_active = true ORDER BY first_name, last_name',
       ['student']
     );
     
-    const predictions = students.map(s => ({ ...s, ...generateDemoPrediction(s.id) }));
+    const aiById = await getStudentPredictions(students.map(s => s.id));
+    const predictions = students.map(s => ({ ...s, ...aiById[s.id] }));
     const ready = predictions.filter(p => p.testReadiness?.classification === 'Ready').length;
     const nearly = predictions.filter(p => p.testReadiness?.classification === 'Nearly Ready').length;
     const highRisk = predictions.filter(p => p.dropoutRisk?.riskLevel === 'High Risk').length;
@@ -1720,7 +1780,7 @@ router.get('/admin/ai-insights', auth, adminOnly, async (req, res) => {
       summary: { ready, nearly, highRisk, medRisk, total: predictions.length }
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1752,7 +1812,8 @@ router.get('/instructor/ai-insights', auth, instructorOnly, async (req, res) => 
       [studentIds, 'student']
     );
     
-    const predictions = students.map(s => ({ ...s, ...generateDemoPrediction(s.id) }));
+    const aiById = await getStudentPredictions(students.map(s => s.id));
+    const predictions = students.map(s => ({ ...s, ...aiById[s.id] }));
     const ready = predictions.filter(p => p.testReadiness?.classification === 'Ready').length;
     const nearly = predictions.filter(p => p.testReadiness?.classification === 'Nearly Ready').length;
     const highRisk = predictions.filter(p => p.dropoutRisk?.riskLevel === 'High Risk').length;
@@ -1765,7 +1826,7 @@ router.get('/instructor/ai-insights', auth, instructorOnly, async (req, res) => 
       summary: { ready, nearly, highRisk, medRisk, total: predictions.length }
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1816,7 +1877,7 @@ router.get('/admin/payments', auth, adminOnly, async (req, res) => {
       totalOutstanding: totalOutstanding.toFixed(2)
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1858,7 +1919,7 @@ router.post('/admin/payments', auth, adminOnly, async (req, res) => {
     
     res.json({ success: true, message: 'Payment recorded.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1910,7 +1971,7 @@ router.get('/admin/reports', auth, adminOnly, async (req, res) => {
       }
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1926,7 +1987,7 @@ router.get('/admin/inquiries', auth, adminOnly, async (req, res) => {
     );
     res.json({ success: true, user: req.session.user, inquiries: inquiries || [] });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1942,7 +2003,7 @@ router.post('/admin/inquiries/:id/status', auth, adminOnly, async (req, res) => 
     );
     res.json({ success: true });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -1951,7 +2012,7 @@ router.delete('/admin/inquiries/:id', auth, adminOnly, async (req, res) => {
     await query('DELETE FROM contact_submissions WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Inquiry deleted.' });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -2191,7 +2252,7 @@ router.get('/student/available-instructors', auth, async (req, res) => {
       }))
     });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    serverError(req, res, err);
   }
 });
 

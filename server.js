@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const path = require('path');
 const morgan = require('morgan');
 const cors = require('cors');
@@ -9,9 +10,21 @@ const rateLimit = require('express-rate-limit');
 
 // ─── DATABASE CONNECTION ─────────────────────────────────────
 const { pool, testConnection } = require('./config/db');
+const { verifyMailer } = require('./utils/mailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// In production a real secret is required: anyone who knows it can forge logins
+if (isProduction && !process.env.SESSION_SECRET) {
+  console.error('❌ SESSION_SECRET must be set in production. Server will not start.');
+  process.exit(1);
+}
+
+// Hosts like Render and Railway sit behind a proxy that handles HTTPS. Trusting it
+// lets secure cookies work and lets rate limiting see each visitor's real IP.
+app.set('trust proxy', 1);
 
 // ─── MIDDLEWARE ──────────────────────────────────────────────
 app.use(morgan('dev'));
@@ -69,12 +82,17 @@ app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 app.use('/auth/', rateLimit({ windowMs: 15 * 60 * 1000, max: 30 }));
 
 // ─── SESSION CONFIGURATION ──────────────────────────────────
+// Sessions are stored in MySQL (a `sessions` table is created automatically),
+// so users stay logged in when the server restarts
+const sessionStore = new MySQLStore({}, pool);
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'xolani-ds-secret-2024-kzn',
+  secret: process.env.SESSION_SECRET || 'dev-only-secret-not-for-production',
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax'
@@ -104,10 +122,10 @@ app.get('/health', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    res.status(500).json({ 
-      status: 'unhealthy', 
-      database: 'disconnected',
-      error: error.message 
+    console.error('Health check failed:', error.message);
+    res.status(500).json({
+      status: 'unhealthy',
+      database: 'disconnected'
     });
   }
 });
@@ -156,7 +174,8 @@ async function startServer() {
     console.log(`\n🚗  Xolani Driving School Platform`);
     console.log(`✅  Running → http://localhost:${PORT}`);
     console.log(`📱  Mode: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🗄️  Database: MySQL (connected)\n`);
+    console.log(`🗄️  Database: MySQL (connected)`);
+    verifyMailer().then(() => console.log(''));
   });
 }
 

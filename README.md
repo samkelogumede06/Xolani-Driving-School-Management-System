@@ -1,338 +1,228 @@
-🚗 Xolani's Driving School – Setup Guide
-A digital transformation system for a real driving school in KwaZulu-Natal, South Africa. Built with Node.js + Express.js + Supabase PostgreSQL. Features student and admin portals, QR attendance, AI-powered readiness scoring, payments, vehicle tracking, and a business intelligence dashboard.
+# Xolani Driving School — Management Platform
 
-📋 Requirements
-Tool	Purpose
-Node.js (v18+)	JavaScript runtime for the backend server
-npm	Package manager (comes with Node.js)
-Supabase	PostgreSQL database + Authentication
-VS Code	To browse and edit the code
-Any modern browser	Chrome, Firefox, Edge
-🚀 Quick Start (10 minutes)
-1. Install Node.js
-Download and install Node.js from nodejs.org (LTS version recommended)
+A full-stack web platform for a driving school with two branches in Umlazi, KwaZulu-Natal. It replaces paper-based admin with a public website plus three role-based portals for students, instructors and administrators.
 
-Verify installation by opening a terminal/command prompt and running:
+**Stack:** Node.js · Express · MySQL · HTML/CSS/vanilla JavaScript
 
-bash
-node --version
-npm --version
-Both commands should display version numbers
+<!-- Add a live demo link and screenshots here once deployed, e.g.
+**Live demo:** https://your-app-url
+![Admin dashboard](docs/screenshots/admin-dashboard.png)
+-->
 
-2. Clone and Install Dependencies
-bash
-git clone <your-repo-url>
-cd xolani-driving-school
+---
+
+## Features
+
+### Public website
+- Home, About, Pricing and Contact pages
+- Branch details with Google Maps links
+- Contact form that saves enquiries for the admin team
+
+### Student portal
+- Dashboard with upcoming lessons, notifications and a test-readiness score
+- Book lessons by choosing an available instructor and time slot
+- Lesson history, attendance record and payment history
+- **QR attendance:** scan the lesson's QR code with a phone to check in
+- Profile with emergency contact details
+
+### Instructor portal
+- Dashboard and list of their own lessons
+- Update lesson status, add notes and score the student
+- Generate a lesson's QR code and mark attendance manually
+- Set availability, view notifications and student insights
+- Forced password change on first login (admins create instructor accounts with a temporary password)
+
+### Admin portal
+- KPI dashboard across both branches
+- Manage students, enrolments, instructors, vehicles and packages
+- Daily schedule with lesson booking and QR code generation
+- Attendance records, payments (with CSV export) and enquiries
+- Reports with Chart.js charts (revenue, lesson types, enrolment trends)
+- Insights page with test-readiness and dropout-risk scores for every student
+
+---
+
+## How it works
+
+### QR attendance
+1. When a lesson is scheduled, the server creates a unique token and a QR code that links to `/student/scan-qr.html?token=…`.
+2. The student scans the code while logged in.
+3. The server checks that the lesson belongs to that student, hasn't already been marked, and that the scan is between 30 minutes before and 3 hours after the lesson start.
+4. If all checks pass, attendance is recorded and the lesson is updated.
+
+### Readiness and dropout-risk scoring
+[`utils/aiPredictions.js`](utils/aiPredictions.js) contains two rule-based, weighted scoring models (not machine learning). They're calculated live from each student's lessons, active enrolment and payment balance whenever a dashboard loads.
+
+**Test readiness (0–100)**
+
+| Factor | Weight | Source |
+|---|---|---|
+| Lesson progress | 30% | Completed lessons ÷ lessons in the student's package |
+| Attendance rate | 20% | Attended ÷ (attended + no-shows) |
+| Average lesson score | 25% | Instructor's 0–100 score on completed lessons |
+| Recent performance | 20% | Average of the last 3 scored lessons |
+| Improvement trend | 5% | Latest score compared with the first |
+
+A completed yard test scored 50 or higher adds 5 points, and each no-show subtracts 2. Results: **Ready** (85+), **Nearly Ready** (70–84), **In Progress** (50–69), **Needs More Training** (below 50), each with recommendations. The "pass probability" shown alongside is a simple estimate derived from this score.
+
+**Dropout risk (0–100)**
+
+| Factor | Points |
+|---|---|
+| No-show rate | up to 30 |
+| Consecutive no-shows (1 / 2 / 3+) | 10 / 20 / 30 |
+| Days since last attended lesson (>7 / >14 / >30), ignored if a lesson is booked | 5 / 15 / 25 |
+| Share of package price still unpaid | up to 20 |
+| Attendance trend (last 3 lessons vs earlier ones) | +15 declining, −10 improving |
+
+Results: **Low** (below 35), **Medium** (35–64), **High** (65+).
+
+### Email verification
+1. A new sign-up is created as unverified, and a "Verify My Email" link is emailed to the address. The link is valid for 24 hours and works once.
+2. Unverified accounts can't log in. The login page explains why and offers a **Resend verification email** button.
+3. If someone registers with another person's email, they can't use the account because they can't open the link. When the real owner signs up, they take the unverified account over.
+4. Accounts created by an admin (instructors) and accounts that existed before this feature count as verified. Completing a password reset also verifies the email, since it proves the user can read that inbox.
+
+### Password reset
+1. The user enters their email on the Forgot Password page. The response is the same whether or not the account exists, so it can't be used to discover registered emails.
+2. The server creates a random token, stores only its SHA-256 hash with a 1-hour expiry, and emails a link to `/auth/reset-password.html?token=…`.
+3. When the new password is submitted, the token is checked against the stored hash and expiry. The password is updated and the token is cleared, so each link works once.
+4. A "your password was changed" email is sent as a security notice.
+
+### Security
+- Passwords hashed with bcrypt
+- Server-side sessions stored in MySQL (`express-session` + `express-mysql-session`, httpOnly secure cookies), so logins survive restarts
+- Database error details are logged on the server, never sent to the browser in production
+- The server refuses to start in production without a `SESSION_SECRET`
+- Role-based route protection for student, instructor and admin APIs
+- Instructors can only view and update their own lessons
+- Helmet security headers and a Content Security Policy
+- Rate limiting on `/api` and `/auth` routes
+- Parameterised SQL queries throughout (`mysql2`)
+
+---
+
+## Running it locally
+
+### Requirements
+- Node.js 18 or newer
+- MySQL 8 (MySQL Workbench, phpMyAdmin or the CLI)
+
+### 1. Install dependencies
+```bash
+git clone https://github.com/samkelogumede06/Xolani-Driving-School-Management-System.git
+cd Xolani-Driving-School-Management-System
 npm install
-This will install all required packages from package.json:
+```
 
-express – Web server framework
+### 2. Create the database
+```sql
+CREATE DATABASE xolani_driving_school;
+USE xolani_driving_school;
+```
+Then run the whole of [`database-schema-mysql.sql`](database-schema-mysql.sql). It creates all tables and seeds the two branches, the lesson packages and sample testimonials.
 
-@supabase/supabase-js – Database client
-
-express-session – User session management
-
-bcrypt – Password hashing
-
-qrcode – QR code generation
-
-chart.js – Charts on reports page
-
-helmet – Security headers
-
-express-rate-limit – API rate limiting
-
-3. Set Up Supabase
-Go to supabase.com and create a new account (free tier works)
-
-Click New Project and fill in:
-
-Name: xolani-driving-school
-
-Database Password: Choose a strong password (save it)
-
-Region: Choose the closest to South Africa (e.g., eu-west-1 or us-east-1)
-
-Wait ~2 minutes for the database to be created
-
-Once ready, go to SQL Editor in the left sidebar
-
-Create a new query and paste the entire contents of database-schema.sql
-
-Click Run – you should see "Success. No rows returned"
-
-Go to Authentication → Users → Add User and create:
-
-Admin: admin@xolanidriving.co.za / Admin123!
-
-Student: student@xolanidriving.co.za / Student123!
-4. Configure Environment Variables
-bash
+### 3. Configure environment variables
+```bash
 cp .env.example .env
-Open the .env file in VS Code and fill in your Supabase credentials:
+```
+Fill in your MySQL credentials and set `SESSION_SECRET` to a long random string.
 
-env
-# Supabase Configuration
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_ANON_KEY=your-anon-key-here
-SUPABASE_SERVICE_KEY=your-service-role-key-here
+For verification and password-reset emails, either fill in the `SMTP_*` settings (for example a Gmail [app password](https://support.google.com/accounts/answer/185833)) or set `BREVO_API_KEY` to send through [Brevo](https://www.brevo.com)'s API. In development you can leave them blank, and each email (including its link) is printed to the server console instead. On startup the server reports whether email is working.
 
-# Server Configuration
-SESSION_SECRET=your-secret-key-here
-PORT=3000
-APP_URL=http://localhost:3000
+### 4. Create an admin account
+The schema doesn't create any users. Generate a password hash:
+```bash
+node -e "require('bcrypt').hash('Admin123!', 10).then(console.log)"
+```
+Then insert the admin, pasting in the hash:
+```sql
+INSERT INTO profiles (email, password_hash, role, first_name, last_name)
+VALUES ('admin@xolanidriving.co.za', '<paste-hash-here>', 'admin', 'System', 'Admin');
+```
+- **Students** sign up at `/auth/register.html` and must click the emailed verification link before logging in
+- **Instructors** are added by an admin on the Instructors page, which returns a temporary password
 
-# Environment
-NODE_ENV=development
-How to find your keys:
-
-SUPABASE_URL – Found in Project Settings → API → Project URL
-
-SUPABASE_ANON_KEY – Found in Project Settings → API → Project API Keys (anon public)
-
-SUPABASE_SERVICE_KEY – Found in Project Settings → API → Project API Keys (service_role) – keep this secret!
-
-5. Start the Application
-bash
+### 5. Start the server
+```bash
+npm run dev   # auto-reloads with nodemon
+# or
 npm start
-For development with auto-reload on changes:
+```
+Open http://localhost:3000. The app must run through the Express server; opening the HTML files directly won't work.
 
-bash
-npm run dev
-You should see:
+### Demo accounts
 
-text
-✅ Server running on http://localhost:3000
-✅ Connected to Supabase
-6. Open the App
-Visit in your browser: http://localhost:3000
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@xolanidriving.co.za | Admin123! |
+| Student | teststudent@xolanidriving.co.za | Student123! |
 
-⚠️ Important: Do not open the HTML files directly. The app must be served through Node.js (Express) because it uses backend API endpoints and database connections.
+---
 
-🔑 Demo Login Accounts
-Student Portal — http://localhost:3000/auth/login
-Role	Username	Password
-Student	student@xolanidriving.co.za	Student123!
-Student	(Create new users via Supabase Auth → Users → Add User)	
-Admin Portal — http://localhost:3000/auth/login
-Role	Username	Password
-Admin	admin@xolanidriving.co.za	Admin123!
-📁 Project Structure
-text
-xolani-driving-school/
-│
-├── server.js                     # Express server (entry point)
-├── package.json                  # Dependencies
-├── .env                          # Environment variables (create from .env.example)
-├── database-schema.sql           # Supabase SQL schema (import first)
-│
+## Deploying
+
+The app needs a Node.js host plus a MySQL database (static hosts like Vercel or Netlify won't work). For example, Railway (app + MySQL together) or Render plus a hosted MySQL such as Aiven.
+
+1. Create the database by running `database-schema-mysql.sql`, then create an admin account (step 4 above). For an existing database, run the files in `migrations/` instead, oldest first.
+2. Set the environment variables from `.env.example` on the host. Use `NODE_ENV=production`, a long random `SESSION_SECRET`, `APP_URL` set to the live URL (used in email links), and your database and email settings.
+3. Build command `npm install`, start command `npm start`.
+
+Many hosts block SMTP ports, especially on free plans. If the startup log shows the SMTP connection failing, use `BREVO_API_KEY` instead.
+
+---
+
+## Project structure
+
+```
+├── server.js                  # Express app: security middleware, sessions, static files, routes
+├── config/db.js               # MySQL connection pool
 ├── routes/
-│   ├── api.js                    # All /api/* endpoints (lessons, students, etc.)
-│   └── auth.js                   # /auth/login, /auth/register, /auth/logout
-│
+│   ├── auth.js                # Login, register, logout, email verification, change and reset password
+│   └── api.js                 # Student, instructor, admin and public API endpoints
 ├── utils/
-│   └── aiPredictions.js          # AI test readiness + dropout risk engine
-│
-├── public/                       # All static files served directly
-│   ├── index.html                # Home / landing page
-│   ├── about.html                # About page
-│   ├── pricing.html              # Pricing page
-│   ├── contact.html              # Contact page
-│   │
-│   ├── css/
-│   │   └── style.css             # Master stylesheet (navy + amber theme)
-│   │
-│   ├── js/
-│   │   └── app.js                # Master JavaScript
-│   │
-│   ├── auth/
-│   │   ├── login.html            # Login page
-│   │   └── register.html         # Registration page
-│   │
-│   ├── student/                  # STUDENT PORTAL
-│   │   ├── dashboard.html        # Main dashboard + stats + QR code
-│   │   ├── lessons.html          # Lesson history + booking
-│   │   ├── attendance.html       # Attendance history + rate
-│   │   ├── progress.html         # AI readiness score + progress
-│   │   ├── payments.html         # Payment history + submit payment
-│   │   ├── notifications.html    # System notifications
-│   │   ├── profile.html          # Edit profile + emergency contacts
-│   │   └── scan-qr.html          # QR code attendance scanner
-│   │
-│   └── admin/                    # ADMIN PORTAL
-│       ├── dashboard.html        # KPIs + today's schedule + AI summary
-│       ├── students.html         # Manage students + AI risk badges
-│       ├── instructors.html      # Manage instructors + availability
-│       ├── vehicles.html         # Fleet management + roadworthy alerts
-│       ├── packages.html         # Manage pricing packages
-│       ├── schedule.html         # Daily calendar + lesson booking
-│       ├── attendance.html       # Attendance records + QR stats
-│       ├── payments.html         # Record payments + CSV export
-│       ├── reports.html          # Revenue charts + Power BI embed
-│       ├── ai-insights.html      # AI readiness + dropout risk per student
-│       └── inquiries.html        # Contact form submissions
-└──
-✨ Key Features
-Public Website (No Login Required)
-Page	Features
-Home	Hero section, services, statistics, testimonials, pricing preview, branch locations
-About	Company story, mission/vision, values, team, accreditations
-Pricing	All 6 packages with full details and FAQ
-Contact	Both branches with clickable Google Maps links, contact form
-Student Portal (Login Required)
-Page	Features
-Dashboard	Stats, AI readiness score, dropout risk, upcoming lessons, notifications
-My Lessons	Full lesson history with filters, QR attendance instructions
-Attendance	Attendance history with rate visualization
-Progress	AI readiness breakdown, skill areas, score history, package progress
-Payments	Payment history, balance due, payment instructions
-Notifications	All system notifications with mark-as-read
-Profile	Edit personal info, emergency contacts
-QR Scan	Dedicated QR code attendance landing page
-Admin Portal (Login Required)
-Page	Features
-Dashboard	KPI stats, branch overview, today's schedule, quick actions, AI summary
-Students	Full CRUD, search/filter, AI risk badges, enrolment modal, CSV export
-Instructors	Card view, add/manage instructors, availability toggle
-Vehicles	Fleet management, roadworthy expiry warnings
-Packages	Create/edit/deactivate pricing packages
-Schedule	Daily calendar (list + timeline views), lesson booking, QR generation
-Attendance	Mark present/absent manually, QR scan stats
-Payments	Record payments, date/method filters, CSV export
-Reports	Revenue charts, lesson type doughnut, enrollment trend, Power BI embed
-AI Insights	Test readiness + dropout risk for all students, high-risk alerts
-Inquiries	Contact form submissions with reply, WhatsApp, call actions
-📱 How the QR Attendance System Works
-Admin schedules a lesson → System generates a unique QR token with student ID + lesson time
+│   ├── aiPredictions.js       # Readiness and dropout-risk scoring
+│   └── mailer.js              # Verification and password reset emails (Nodemailer)
+├── database-schema-mysql.sql  # Full schema and seed data
+├── migrations/                # Incremental changes for older databases
+└── public/
+    ├── index.html, about.html, pricing.html, contact.html
+    ├── css/style.css          # Shared stylesheet
+    ├── js/app.js              # Shared helpers (API calls, toasts, modals, formatting)
+    ├── auth/                  # Login, register, password pages
+    ├── student/               # Student portal
+    ├── instructor/            # Instructor portal
+    └── admin/                 # Admin portal
+```
 
-Student opens their Student Dashboard → Their QR code is displayed
+### Database tables
+`branches`, `profiles` (all users, with a `role` column), `instructors`, `vehicles`, `packages`, `enrollments`, `lessons`, `payments`, `notifications`, `ai_predictions`, `contact_submissions`, `testimonials`
 
-Admin opens admin/scan-qr.html → Click "Scan QR" button
+---
 
-Student holds their phone with QR code to the webcam
+## Known limitations and next steps
+- **Power BI** — the Reports page has an embed placeholder that needs a published report URL.
+- **Automated tests** — none yet.
 
-System decodes the QR token and validates:
+---
 
-Student exists
+## Tech stack
 
-Lesson is scheduled for today
+| Layer | Technology |
+|---|---|
+| Backend | Node.js, Express |
+| Database | MySQL (`mysql2`) |
+| Auth | `express-session`, bcrypt |
+| Security | Helmet, express-rate-limit |
+| Frontend | HTML5, CSS3, vanilla JavaScript |
+| Charts | Chart.js |
+| QR codes | `qrcode` |
+| Email | Nodemailer (SMTP) |
+| Icons and fonts | Font Awesome, Google Fonts |
 
-Within ±3 hours of scheduled time
+---
 
-Attendance recorded in the database
+## Author
+**Samkelo Gumede** — [GitHub](https://github.com/samkelogumede06)
 
-Student receives a notification: "Attendance confirmed for today's lesson"
-
-Alternative method: Admin can manually select a student from the dropdown on the Scan page.
-
-🧠 How the AI Readiness Score Works
-The score is calculated per student using a weighted formula in utils/aiPredictions.js:
-
-Factor	Weight	How it's measured
-Lesson Progress	25%	Lessons attended ÷ course target lessons
-Attendance Rate	20%	Present scans ÷ total scheduled lessons
-Average Score	25%	Instructor ratings from completed lessons
-Instructor Rating	15%	Average feedback score from instructors
-Recent Performance	10%	Trend from last 5 lessons
-Improvement Trend	5%	Overall trend direction (improving/declining)
-Output Categories:
-
-✅ Ready for Test (≥80%)
-🔶 Nearly Ready (65–79%)
-📘 In Progress (40–64%)
-⚠️ Needs More Training (<40%)
-
-Dropout Risk Score (Separate Algorithm)
-Factor	Weight
-Missed lessons rate	35%
-Consecutive misses	25%
-Days since last lesson	20%
-Payment issues	15%
-Attendance trend	5%
-Risk Levels with Action Recommendations:
-
-🟢 Low – No action needed
-
-🟡 Medium – Send motivational SMS, offer rescheduling options
-
-🔴 High – Admin alert, schedule parent/guardian meeting
-
-🔒 Security Features
-Layer	Implementation
-Authentication	Express-session with JWT via Supabase Auth
-Authorization	Role-based access (student / admin / super_admin)
-Headers	Helmet.js for security headers
-Rate Limiting	API and auth routes protected against brute force
-Database	Supabase Row Level Security (RLS) policies
-Passwords	Bcrypt hashing (never stored in plain text)
-Environment	Service key used server-side only (never exposed to client)
-📊 Power BI Integration
-Publish your Power BI report to Power BI Service
-
-Go to File → Embed Report → Copy the embed URL
-
-In public/admin/reports.html, replace YOUR_EMBED_TOKEN_HERE in the iframe src
-
-Click the "Load Power BI Dashboard" button in the Reports page
-
-🛠 Tech Stack
-Layer	Technology
-Backend	Node.js, Express.js
-Database	Supabase (PostgreSQL)
-Authentication	Supabase Auth (JWT sessions)
-Frontend	HTML5, CSS3, Vanilla JavaScript
-Charts	Chart.js (reports page)
-QR Codes	qrcode npm package
-BI	Power BI embed (configurable)
-Icons	Font Awesome 6
-Fonts	Google Fonts (Sora + DM Sans)
-🎨 Design System
-Element	Specification
-Primary	Deep Navy #0f2a4a
-Accent	Amber Gold #f5a623
-Font Display	Sora (headings)
-Font Body	DM Sans
-Border Radius	12px (cards), 20px (large panels)
-Layout	Mobile-first, fully responsive with sidebar toggle on mobile
-🚀 Deployment Instructions
-Deploy to Railway (Recommended)
-bash
-# Install Railway CLI
-npm install -g @railway/cli
-
-# Login
-railway login
-
-# Deploy
-railway up
-
-# Add environment variables in Railway Dashboard
-Deploy to Render
-bash
-# Push your code to GitHub
-# Go to render.com → New Web Service → Connect repository
-# Set:
-#   - Build Command: npm install
-#   - Start Command: npm start
-# Add environment variables (SUPABASE_URL, SUPABASE_ANON_KEY, SESSION_SECRET)
-# Deploy!
-Deploy to Heroku
-bash
-heroku create xolani-driving-school
-heroku config:set $(cat .env | xargs)
-git push heroku main
-⚠️ Note: Serverless platforms like Vercel/Netlify will NOT work because this is a Node.js server application, not static files.
-
-❓ Common Issues & Solutions
-Issue	Solution
-"Database connection failed"	Make sure Supabase is running and your .env keys are correct
-"Cannot find module"	Run npm install again
-Login says "Invalid credentials"	Make sure users exist in Supabase Auth → Users
-Page loads but no data	Check that you're on http://localhost:3000 not file://
-QR download shows blank page	The qrcode package uses an API; check your internet connection
-Uploads not saving	Make sure public/ has write permissions for the process
-Port 3000 already in use	Change PORT in .env to another port (e.g., 3001)
-Supabase RLS errors	Check that RLS policies are applied in database-schema.sql
-📝 License
-© 2024 Xolani's Driving School. All rights reserved.
-Built as a Digital Transformation Project for IS3.
+Built as a digital transformation project (IS3) for Xolani Driving School.

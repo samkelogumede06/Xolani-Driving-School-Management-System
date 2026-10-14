@@ -1,25 +1,100 @@
 /**
- * Xolani Driving School — AI Prediction Engine
- * Two algorithms: Test Readiness + Dropout Risk
+ * Xolani Driving School — Prediction Engine
+ * Two rule-based models: Test Readiness + Dropout Risk,
+ * calculated from each student's real lesson, enrollment and payment records.
  */
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function average(nums) {
+  return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
+}
+
+function toDate(value) {
+  return value instanceof Date ? value : new Date(value);
+}
+
+/**
+ * Turn raw database rows into model inputs.
+ * @param {object}   opts
+ * @param {object[]} opts.lessons    rows from `lessons` for this student
+ * @param {object}   opts.enrollment active enrollment joined with package lesson_count (or null)
+ * @param {Date}     opts.createdAt  when the student's profile was created
+ * @param {Date}     [opts.now]
+ */
+function buildStudentInputs({ lessons = [], enrollment = null, createdAt = null, now = new Date() }) {
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+
+  const byDate = [...lessons].sort((a, b) => toDate(a.scheduled_date) - toDate(b.scheduled_date));
+
+  // Lessons that have actually happened (attended) or were missed (no-show)
+  const resolved = byDate.filter(l => ['completed', 'in_progress', 'no_show'].includes(l.status));
+  const attended = resolved.filter(l => l.status !== 'no_show');
+  const missed = resolved.filter(l => l.status === 'no_show');
+  const completed = byDate.filter(l => l.status === 'completed');
+  const upcoming = byDate.filter(l => l.status === 'scheduled' && toDate(l.scheduled_date) >= todayStart);
+
+  const scores = completed.filter(l => l.student_score != null).map(l => Number(l.student_score));
+
+  // Consecutive no-shows, counting back from the most recent resolved lesson
+  let consecutiveMissed = 0;
+  for (let i = resolved.length - 1; i >= 0 && resolved[i].status === 'no_show'; i--) consecutiveMissed++;
+
+  // Compare attendance of the last 3 resolved lessons with the ones before them
+  let attendanceTrend = 'stable';
+  if (resolved.length >= 6) {
+    const rate = list => list.filter(l => l.status !== 'no_show').length / list.length;
+    const diff = rate(resolved.slice(-3)) - rate(resolved.slice(0, -3));
+    if (diff <= -0.2) attendanceTrend = 'declining';
+    else if (diff >= 0.2) attendanceTrend = 'improving';
+  }
+
+  const lastActivity = attended.length
+    ? toDate(attended[attended.length - 1].scheduled_date)
+    : (enrollment?.start_date ? toDate(enrollment.start_date) : (createdAt ? toDate(createdAt) : now));
+  const daysSinceLastLesson = Math.max(0, Math.floor((todayStart - lastActivity) / DAY_MS));
+
+  const paid = parseFloat(enrollment?.total_paid) || 0;
+  const balance = parseFloat(enrollment?.balance_due) || 0;
+
+  return {
+    readiness: {
+      lessonsCompleted: completed.length,
+      totalLessons: enrollment?.lesson_count || 10,
+      attendanceRate: resolved.length ? (attended.length / resolved.length) * 100 : 0,
+      averageScore: average(scores),
+      recentScores: scores.slice(-3),
+      scoreTrend: scores.length >= 2 ? scores[scores.length - 1] - scores[0] : 0,
+      missedLessons: missed.length,
+      yardTestPassed: completed.some(l => l.lesson_type === 'yard_test' && Number(l.student_score) >= 50)
+    },
+    dropout: {
+      missedLessonsCount: missed.length,
+      totalResolvedLessons: resolved.length,
+      consecutiveMissedLessons: consecutiveMissed,
+      daysSinceLastLesson,
+      hasUpcomingLesson: upcoming.length > 0,
+      outstandingBalanceRatio: paid + balance > 0 ? balance / (paid + balance) : 0,
+      attendanceTrend
+    }
+  };
+}
 
 function calculateTestReadiness(d = {}) {
   const {
     lessonsCompleted = 0, totalLessons = 10,
     attendanceRate = 0, averageScore = 0,
-    instructorRating = 0, missedLessons = 0,
-    yardTestPassed = false, practiceTestScores = []
+    recentScores = [], scoreTrend = 0,
+    missedLessons = 0, yardTestPassed = false
   } = d;
 
   const lessonProgress = Math.min((lessonsCompleted / Math.max(totalLessons, 1)) * 100, 100);
-  const recentScores = practiceTestScores.slice(-3);
-  const recentAvg = recentScores.length > 0 ? recentScores.reduce((a, b) => a + b, 0) / recentScores.length : averageScore;
-  const improvement = practiceTestScores.length >= 2
-    ? practiceTestScores[practiceTestScores.length - 1] - practiceTestScores[0] : 0;
+  const recentAvg = recentScores.length ? average(recentScores) : averageScore;
+  const trendScore = Math.max(0, Math.min(scoreTrend * 2 + 50, 100));
 
-  let raw = (lessonProgress * 0.25) + (attendanceRate * 0.20) + (averageScore * 0.25) +
-            (instructorRating * 0.15) + (recentAvg * 0.10) +
-            (Math.max(0, Math.min(improvement * 2 + 50, 100)) * 0.05);
+  let raw = (lessonProgress * 0.30) + (attendanceRate * 0.20) + (averageScore * 0.25) +
+            (recentAvg * 0.20) + (trendScore * 0.05);
 
   if (yardTestPassed) raw = Math.min(raw + 5, 100);
   raw = Math.max(raw - missedLessons * 2, 0);
@@ -41,27 +116,32 @@ function calculateTestReadiness(d = {}) {
   }
 
   return { score, passProbability, classification, recommendations,
-    breakdown: { lessonProgress: Math.round(lessonProgress), attendanceRate: Math.round(attendanceRate), averageScore: Math.round(averageScore), instructorRating: Math.round(instructorRating), recentPerformance: Math.round(recentAvg) },
+    breakdown: { lessonProgress: Math.round(lessonProgress), attendanceRate: Math.round(attendanceRate), averageScore: Math.round(averageScore), recentPerformance: Math.round(recentAvg) },
     generatedAt: new Date().toISOString() };
 }
 
 function calculateDropoutRisk(d = {}) {
   const {
-    missedLessonsCount = 0, totalScheduledLessons = 1,
+    missedLessonsCount = 0, totalResolvedLessons = 0,
     consecutiveMissedLessons = 0, daysSinceLastLesson = 0,
-    paymentsMissed = 0, totalPaymentsDue = 1,
+    hasUpcomingLesson = false, outstandingBalanceRatio = 0,
     attendanceTrend = 'stable'
   } = d;
 
+  const missedRate = missedLessonsCount / Math.max(totalResolvedLessons, 1);
+
   let riskScore = 0;
-  riskScore += (missedLessonsCount / Math.max(totalScheduledLessons, 1)) * 30;
+  riskScore += missedRate * 30;
   if (consecutiveMissedLessons >= 3) riskScore += 30;
   else if (consecutiveMissedLessons === 2) riskScore += 20;
   else if (consecutiveMissedLessons === 1) riskScore += 10;
-  if (daysSinceLastLesson > 30) riskScore += 25;
-  else if (daysSinceLastLesson > 14) riskScore += 15;
-  else if (daysSinceLastLesson > 7) riskScore += 5;
-  riskScore += (paymentsMissed / Math.max(totalPaymentsDue, 1)) * 20;
+  // A booked upcoming lesson means the student is still engaged
+  if (!hasUpcomingLesson) {
+    if (daysSinceLastLesson > 30) riskScore += 25;
+    else if (daysSinceLastLesson > 14) riskScore += 15;
+    else if (daysSinceLastLesson > 7) riskScore += 5;
+  }
+  riskScore += outstandingBalanceRatio * 20;
   if (attendanceTrend === 'declining') riskScore += 15;
   else if (attendanceTrend === 'improving') riskScore -= 10;
   riskScore = Math.max(0, Math.min(riskScore, 100));
@@ -79,27 +159,16 @@ function calculateDropoutRisk(d = {}) {
   }
 
   return { riskScore: Math.round(riskScore), riskLevel, riskColor, recommendations,
-    factors: { missedLessonsRate: Math.round((missedLessonsCount/Math.max(totalScheduledLessons,1))*100), consecutiveMisses: consecutiveMissedLessons, daysSinceLastLesson, paymentIssues: Math.round((paymentsMissed/Math.max(totalPaymentsDue,1))*100), trend: attendanceTrend },
+    factors: { missedLessonsRate: Math.round(missedRate * 100), consecutiveMisses: consecutiveMissedLessons, daysSinceLastLesson, paymentIssues: Math.round(outstandingBalanceRatio * 100), trend: attendanceTrend },
     generatedAt: new Date().toISOString() };
 }
 
-function generateDemoPrediction(studentId = '') {
-  const seed = studentId ? (studentId.charCodeAt(0) + studentId.charCodeAt(1)) % 40 : 20;
+function predictStudent(data) {
+  const inputs = buildStudentInputs(data);
   return {
-    testReadiness: calculateTestReadiness({
-      lessonsCompleted: 5 + (seed % 8), totalLessons: 10,
-      attendanceRate: 70 + (seed % 25), averageScore: 65 + (seed % 28),
-      instructorRating: 70 + (seed % 22), missedLessons: seed % 3,
-      practiceTestScores: [55 + seed%15, 60 + seed%18, 65 + seed%20]
-    }),
-    dropoutRisk: calculateDropoutRisk({
-      missedLessonsCount: seed % 3, totalScheduledLessons: 8,
-      consecutiveMissedLessons: seed > 30 ? 1 : 0,
-      daysSinceLastLesson: 2 + (seed % 10),
-      paymentsMissed: seed > 35 ? 1 : 0, totalPaymentsDue: 2,
-      attendanceTrend: seed > 20 ? 'improving' : 'stable'
-    })
+    testReadiness: calculateTestReadiness(inputs.readiness),
+    dropoutRisk: calculateDropoutRisk(inputs.dropout)
   };
 }
 
-module.exports = { calculateTestReadiness, calculateDropoutRisk, generateDemoPrediction };
+module.exports = { buildStudentInputs, calculateTestReadiness, calculateDropoutRisk, predictStudent };

@@ -3,6 +3,29 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const { pool } = require('../config/db');
 const crypto = require('crypto');
+const { sendPasswordResetEmail, sendPasswordChangedEmail, sendVerificationEmail } = require('../utils/mailer');
+
+// ─── HELPERS: Emailed one-time links ─────────────────────────
+// Only a SHA-256 hash of each token is stored, so a leaked database
+// can't be used to verify accounts or reset passwords.
+function hashToken(token) {
+  return crypto.createHash('sha256').update(String(token)).digest('hex');
+}
+
+function appUrl(req) {
+  return process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+}
+
+async function sendVerificationLink(req, user) {
+  const token = crypto.randomBytes(32).toString('hex');
+  await pool.query(
+    'UPDATE profiles SET verify_token_hash = ?, verify_token_expires = DATE_ADD(NOW(), INTERVAL 24 HOUR) WHERE id = ?',
+    [hashToken(token), user.id]
+  );
+  const verifyUrl = `${appUrl(req)}/auth/verify-email?token=${token}`;
+  sendVerificationEmail({ to: user.email, firstName: user.first_name, verifyUrl })
+    .catch(err => console.error('Verification email failed:', err.message));
+}
 
 // ─── HELPER: Get user by email ──────────────────────────────
 async function getUserByEmail(email) {
@@ -56,6 +79,11 @@ router.post('/login', async (req, res) => {
     if (!isValidPassword) {
       console.log('❌ Invalid password for:', email);
       return res.redirect('/auth/login.html?error=Invalid email or password');
+    }
+
+    if (!user.email_verified) {
+      const msg = 'Please verify your email first. Check your inbox (and spam folder) for the verification link.';
+      return res.redirect(`/auth/login.html?unverified=1&email=${encodeURIComponent(user.email)}&error=${encodeURIComponent(msg)}`);
     }
 
     // Get branch name if exists
@@ -119,7 +147,8 @@ router.post('/login', async (req, res) => {
 // ─── POST /auth/register ──────────────────────────────────
 router.post('/register', async (req, res) => {
   try {
-    const { first_name, last_name, email, password, confirm_password, phone, date_of_birth, branch_id } = req.body;
+    const { first_name, last_name, password, confirm_password, phone, date_of_birth, branch_id } = req.body;
+    const email = (req.body.email || '').trim();
 
     console.log('📝 Registration attempt for:', email);
 
@@ -134,62 +163,44 @@ router.post('/register', async (req, res) => {
       return res.json({ success: false, error: 'Password must be at least 8 characters' });
     }
 
-    // Check if user already exists
+    const password_hash = await bcrypt.hash(password, 10);
     const existingUser = await getUserByEmail(email);
-    if (existingUser) {
-      return res.json({ 
-        success: false, 
-        error: 'An account with this email already exists. Please login instead.' 
+    let userId;
+
+    if (existingUser && existingUser.email_verified) {
+      return res.json({
+        success: false,
+        error: 'An account with this email already exists. Please login instead.'
       });
     }
 
-    // Hash password
-    const saltRounds = 10;
-    const password_hash = await bcrypt.hash(password, saltRounds);
+    if (existingUser) {
+      // An unverified sign-up never proved it owns this email, so the new
+      // sign-up takes it over (same id, so anything linked to it is kept)
+      userId = existingUser.id;
+      await pool.query(
+        `UPDATE profiles SET password_hash = ?, first_name = ?, last_name = ?, phone = ?,
+           date_of_birth = ?, branch_id = ?
+         WHERE id = ? AND email_verified = FALSE`,
+        [password_hash, first_name, last_name, phone, date_of_birth || null, branch_id || null, userId]
+      );
+    } else {
+      userId = crypto.randomUUID();
+      await pool.query(
+        `INSERT INTO profiles (
+          id, email, password_hash, role, first_name, last_name,
+          phone, date_of_birth, branch_id, is_active, email_verified
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, email, password_hash, 'student', first_name, last_name,
+         phone, date_of_birth || null, branch_id || null, true, false]
+      );
+    }
 
-    // Generate UUID for user
-    const userId = crypto.randomUUID();
+    await sendVerificationLink(req, { id: userId, email, first_name });
 
-    // Insert user into profiles
-    const [result] = await pool.query(
-      `INSERT INTO profiles (
-        id, email, password_hash, role, first_name, last_name, 
-        phone, date_of_birth, branch_id, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        userId,
-        email,
-        password_hash,
-        'student',
-        first_name,
-        last_name,
-        phone,
-        date_of_birth || null,
-        branch_id || null,
-        true
-      ]
-    );
-
-    console.log('✅ User created:', userId);
-
-    // Send welcome notification
-    await pool.query(
-      `INSERT INTO notifications (id, user_id, title, message, type) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        crypto.randomUUID(),
-        userId,
-        'Welcome to Xolani Driving School! 🎉',
-        `Hi ${first_name}, your account is ready. Contact us to choose your package and book your first lesson!`,
-        'success'
-      ]
-    );
-
-    console.log('✅ Registration successful for:', email);
-
-    res.json({ 
-      success: true, 
-      message: 'Account created! You can now login.' 
+    res.json({
+      success: true,
+      message: `Account created! We've sent a verification link to ${email}. Click it to activate your account, then log in.`
     });
   } catch (err) {
     console.error('❌ Register error:', err.message);
@@ -276,39 +287,96 @@ router.post('/change-password', async (req, res) => {
   }
 });
 
+// ─── GET /auth/verify-email ───────────────────────────────
+// The link in the verification email lands here
+router.get('/verify-email', async (req, res) => {
+  const fail = msg => res.redirect(`/auth/login.html?error=${encodeURIComponent(msg)}`);
+  try {
+    const { token } = req.query;
+    if (!token) return fail('Invalid verification link.');
+
+    const [rows] = await pool.query(
+      'SELECT id, first_name FROM profiles WHERE verify_token_hash = ? AND verify_token_expires > NOW()',
+      [hashToken(token)]
+    );
+    const user = rows[0];
+    if (!user) {
+      return fail('This verification link is invalid or has expired. If you already verified, just log in — otherwise log in to get a new link.');
+    }
+
+    await pool.query(
+      'UPDATE profiles SET email_verified = TRUE, verify_token_hash = NULL, verify_token_expires = NULL WHERE id = ?',
+      [user.id]
+    );
+
+    await pool.query(
+      `INSERT INTO notifications (id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)`,
+      [
+        crypto.randomUUID(),
+        user.id,
+        'Welcome to Xolani Driving School! 🎉',
+        `Hi ${user.first_name}, your account is ready. Contact us to choose your package and book your first lesson!`,
+        'success'
+      ]
+    );
+
+    res.redirect(`/auth/login.html?success=${encodeURIComponent('Email verified! You can now log in.')}`);
+  } catch (err) {
+    console.error('Verify email error:', err.message);
+    fail('Verification failed. Please try again.');
+  }
+});
+
+// ─── POST /auth/resend-verification ───────────────────────
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const email = (req.body.email || '').trim();
+    if (!email) return res.json({ success: false, error: 'Email is required' });
+
+    // Same response either way, so this can't be used to discover accounts
+    const user = await getUserByEmail(email);
+    if (user && !user.email_verified && user.is_active) {
+      await sendVerificationLink(req, user);
+    }
+    res.json({ success: true, message: 'If that account still needs verifying, a new link has been sent. Check your inbox (and spam folder).' });
+  } catch (err) {
+    console.error('Resend verification error:', err.message);
+    res.json({ success: false, error: 'Something went wrong. Please try again.' });
+  }
+});
+
 // ─── POST /auth/forgot-password ────────────────────────────
+// Emails a single-use reset link (valid for 1 hour)
+const RESET_SENT_MESSAGE = 'If an account exists for that email, a reset link has been sent.';
+
 router.post('/forgot-password', async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = (req.body.email || '').trim();
     if (!email) {
-      return res.redirect('/auth/forgot-password.html?error=Email is required');
+      return res.json({ success: false, error: 'Email is required' });
     }
-    
-    // Check if user exists
+
     const user = await getUserByEmail(email);
-    if (!user) {
-      // Don't reveal if user exists or not for security
-      return res.redirect('/auth/login.html?success=If an account exists, a reset link has been sent.');
+
+    // Same response whether or not the account exists, so emails can't be enumerated
+    if (user && user.is_active) {
+      const token = crypto.randomBytes(32).toString('hex');
+      await pool.query(
+        'UPDATE profiles SET reset_token_hash = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?',
+        [hashToken(token), user.id]
+      );
+
+      const resetUrl = `${appUrl(req)}/auth/reset-password.html?token=${token}`;
+
+      // Not awaited: response time stays the same whether or not the account exists
+      sendPasswordResetEmail({ to: user.email, firstName: user.first_name, resetUrl })
+        .catch(err => console.error('Reset email failed:', err.message));
     }
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
-
-    // Store reset token in database (add column if needed)
-    // For now, we'll just send a message
-    // You'll need to add reset_token and reset_token_expiry columns to profiles table
-    
-    console.log('🔑 Password reset requested for:', email);
-    console.log('   Reset token:', resetToken);
-
-    // TODO: Send email with reset link
-    // For now, just show success message
-    
-    res.redirect('/auth/login.html?success=If an account exists, a reset link has been sent.');
+    res.json({ success: true, message: RESET_SENT_MESSAGE });
   } catch (err) {
     console.error('Forgot password error:', err.message);
-    res.redirect('/auth/forgot-password.html?error=Something went wrong. Please try again.');
+    res.json({ success: false, error: 'Something went wrong. Please try again.' });
   }
 });
 
@@ -316,25 +384,45 @@ router.post('/forgot-password', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
   try {
     const { token, password, confirm_password } = req.body;
-    
+
     if (!token || !password || !confirm_password) {
-      return res.redirect('/auth/reset-password.html?error=All fields are required');
+      return res.json({ success: false, error: 'All fields are required' });
     }
     if (password !== confirm_password) {
-      return res.redirect('/auth/reset-password.html?error=Passwords do not match');
+      return res.json({ success: false, error: 'Passwords do not match' });
     }
     if (password.length < 8) {
-      return res.redirect('/auth/reset-password.html?error=Password must be at least 8 characters');
+      return res.json({ success: false, error: 'Password must be at least 8 characters' });
     }
 
-    // TODO: Verify token from database
-    // For now, show success message
-    console.log('🔑 Password reset with token:', token);
+    const [rows] = await pool.query(
+      'SELECT id, email, first_name FROM profiles WHERE reset_token_hash = ? AND reset_token_expires > NOW() AND is_active = TRUE',
+      [hashToken(token)]
+    );
+    const user = rows[0];
+    if (!user) {
+      return res.json({ success: false, error: 'This reset link is invalid or has expired. Please request a new one.' });
+    }
 
-    res.redirect('/auth/login.html?success=Password updated successfully. You can now login with your new password.');
+    const password_hash = await bcrypt.hash(password, 10);
+
+    // Clearing the token makes the link single-use. Using an emailed link also
+    // proves the user owns the inbox, so the email counts as verified.
+    await pool.query(
+      `UPDATE profiles
+       SET password_hash = ?, must_change_password = FALSE, reset_token_hash = NULL, reset_token_expires = NULL,
+           email_verified = TRUE, verify_token_hash = NULL, verify_token_expires = NULL
+       WHERE id = ?`,
+      [password_hash, user.id]
+    );
+
+    sendPasswordChangedEmail({ to: user.email, firstName: user.first_name })
+      .catch(err => console.error('Password changed email failed:', err.message));
+
+    res.json({ success: true, message: 'Password updated successfully. You can now log in with your new password.' });
   } catch (err) {
     console.error('Reset password error:', err.message);
-    res.redirect('/auth/reset-password.html?error=Failed to reset password. Please try again.');
+    res.json({ success: false, error: 'Failed to reset password. Please try again.' });
   }
 });
 

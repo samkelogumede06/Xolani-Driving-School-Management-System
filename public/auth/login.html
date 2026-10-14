@@ -41,6 +41,8 @@
 
       <!-- ⭐ ERROR DISPLAY -->
       <div id="login-error" style="display:none;background:rgba(220,38,38,.08);color:var(--danger);padding:12px 16px;border-radius:var(--r-sm);border-left:3px solid var(--danger);margin-bottom:16px;font-size:.86rem;"></div>
+      <div id="login-success" class="alert alert-success" style="display:none"></div>
+      <button type="button" id="resend-verify-btn" class="btn btn-dark btn-block" style="display:none;margin-bottom:16px"><i class="fas fa-envelope"></i> Resend verification email</button>
 
       <!-- ⭐ SIMPLE FORM - Traditional POST, no fetch() -->
       <form action="/auth/login" method="POST">
@@ -71,8 +73,8 @@
 
       <div style="margin-top:20px;padding:14px;background:rgba(15,42,74,.05);border-radius:var(--r-sm);border-left:3px solid var(--accent)">
         <p style="font-size:.78rem;color:var(--gray-500);margin-bottom:6px"><strong style="color:var(--primary)">Demo Credentials:</strong></p>
-        <p style="font-size:.76rem;color:var(--gray-500)">Student: student@demo.co.za / Password123!</p>
-        <p style="font-size:.76rem;color:var(--gray-500)">Admin: admin@demo.co.za / Admin123!</p>
+        <p style="font-size:.76rem;color:var(--gray-500)">Student: student@xolanidriving.co.za / Student123!</p>
+        <p style="font-size:.76rem;color:var(--gray-500)">Admin: admin@xolanidriving.co.za / Admin123!</p>
       </div>
 
       <p style="text-align:center;margin-top:20px;font-size:.78rem;color:var(--gray-400)">
@@ -110,8 +112,40 @@ document.addEventListener('DOMContentLoaded', function() {
     errorEl.textContent = error;
     errorEl.style.display = 'block';
   }
+  const successEl = document.getElementById('login-success');
+  const success = urlParams.get('success');
+  if (success) {
+    successEl.textContent = success;
+    successEl.style.display = 'block';
+  }
 
-  console.log('✅ Login page initialized!');
+  // ─── Unverified email: offer to resend the link ─────────
+  const unverifiedEmail = urlParams.get('unverified') && urlParams.get('email');
+  if (unverifiedEmail) {
+    document.querySelector('input[name="email"]').value = unverifiedEmail;
+    const resendBtn = document.getElementById('resend-verify-btn');
+    resendBtn.style.display = 'block';
+    resendBtn.addEventListener('click', async function() {
+      this.disabled = true;
+      this.innerHTML = '<span class="spinner"></span> Sending…';
+      try {
+        const res = await fetch('/auth/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: unverifiedEmail })
+        });
+        const data = await res.json();
+        document.getElementById('login-error').style.display = 'none';
+        successEl.textContent = data.success ? data.message : (data.error || 'Something went wrong.');
+        successEl.style.display = 'block';
+        this.style.display = 'none';
+      } catch (err) {
+        this.disabled = false;
+        this.innerHTML = '<i class="fas fa-envelope"></i> Resend verification email';
+      }
+    });
+  }
+
 });
 </script>
 </body>

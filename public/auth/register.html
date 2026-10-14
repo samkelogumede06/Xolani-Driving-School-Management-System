@@ -491,14 +491,14 @@ document.getElementById('register-form').addEventListener('submit', async functi
     });
     const data = await res.json();
     if (data.success) {
-      okEl.textContent = 'Account created! Check your email to verify, then login.';
+      okEl.textContent = data.message + ' Check your spam folder if it doesn\'t arrive.';
       okEl.style.display = 'block';
+      okEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       this.reset();
       // Reset password strength bars
       document.querySelectorAll('.pw-bar').forEach(b => b.style.background = 'var(--gray-100)');
       document.getElementById('pw-strength-label').textContent = 'Enter a password to see strength';
       document.getElementById('pw-strength-label').style.color = 'var(--gray-400)';
-      setTimeout(() => window.location.href = '/auth/login.html', 2500);
     } else { 
       errEl.textContent = data.error || 'Registration failed.'; 
       errEl.style.display = 'block'; 

@@ -19,9 +19,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Backup files
+# Database backups (but keep the schema and migrations — they're needed to set up the app)
 *.sql
 *.sql.gz
+!database-schema-mysql.sql
+!migrations/*.sql
 
 # Uploads (user uploaded files)
 public/uploads/
